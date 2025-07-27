@@ -1,0 +1,38 @@
+.article-page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-to-kb {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #ED713C;
+  text-decoration: none;
+  font-weight: bold;
+}
+.back-to-kb:hover {
+  text-decoration: underline;
+}
+
+.article-page-title {
+  color: #fff;
+  line-height: 1.3;
+  border-bottom: 2px solid #ED713C;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.article-content {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1em;
+}
+
+.article-content strong, .article-content b {
+  color: #ED713C;
+  font-weight: 600;
+} 

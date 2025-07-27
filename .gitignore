@@ -1,0 +1,7 @@
+
+# ... other ignores ...
+
+# Игнорируем файлы окружения, содержащие секреты
+.env
+backend/.env 
+node_modules

@@ -1,0 +1,589 @@
+[
+  {
+    "id": "1",
+    "name": "ЗаймЭкспресс",
+    "logo": "https://via.placeholder.com/100x50?text=ZaimExpress",
+    "sum_min": 1000,
+    "sum_max": 30000,
+    "term_min": 5,
+    "term_max": 30,
+    "rate_min": 0.8,
+    "rate_max": 1.0,
+    "approval_chance": 0.95,
+    "payout_speed_hours": 0.25,
+    "description": "Быстрые займы до 30 000 рублей на короткий срок. Оформление онлайн за 5 минут.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ",
+      "Постоянная регистрация"
+    ],
+    "get_methods": [
+      "На карту",
+      "Наличными"
+    ],
+    "repay_methods": [
+      "Онлайн",
+      "Через терминал"
+    ],
+    "license": "Лицензия ЦБ РФ №1234567890",
+    "link": "https://your-partner-site.com/zaimexpress?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "2",
+    "name": "БыстроДеньги",
+    "logo": "https://via.placeholder.com/100x50?text=BystroDengi",
+    "sum_min": 3000,
+    "sum_max": 100000,
+    "term_min": 7,
+    "term_max": 180,
+    "rate_min": 0.7,
+    "rate_max": 1.0,
+    "approval_chance": 0.8,
+    "payout_speed_hours": 1,
+    "description": "Микрозаймы без лишних справок. Моментальное одобрение.",
+    "requirements": [
+      "Гражданство РФ",
+      "Наличие постоянного дохода"
+    ],
+    "get_methods": [
+      "Наличными",
+      "На QIWI-кошелек"
+    ],
+    "repay_methods": [
+      "На карту",
+      "Банковский перевод"
+    ],
+    "license": "Лицензия ЦБ РФ №0987654321",
+    "link": "https://your-partner-site.com/bystrodengi?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "3",
+    "name": "Е-капуста",
+    "logo": "https://via.placeholder.com/100x50?text=Ekapusta",
+    "sum_min": 100,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 21,
+    "rate_min": 0.0,
+    "rate_max": 1.0,
+    "approval_chance": 0.98,
+    "payout_speed_hours": 0.1,
+    "description": "Первый займ бесплатно! Моментальные онлайн-займы 24/7.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "QIWI",
+      "ЮMoney"
+    ],
+    "repay_methods": [
+      "С карты",
+      "QIWI",
+      "ЮMoney"
+    ],
+    "license": "Лицензия ЦБ РФ №2109876543",
+    "link": "https://your-partner-site.com/ekapusta?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "4",
+    "name": "MoneyMan",
+    "logo": "https://via.placeholder.com/100x50?text=MoneyMan",
+    "sum_min": 1500,
+    "sum_max": 80000,
+    "term_min": 5,
+    "term_max": 126,
+    "rate_min": 0.5,
+    "rate_max": 1.0,
+    "approval_chance": 0.90,
+    "payout_speed_hours": 0.5,
+    "description": "Надежные займы на длительный срок. Программа лояльности для клиентов.",
+    "requirements": [
+      "Возраст от 20 лет",
+      "Паспорт РФ",
+      "Активный мобильный телефон"
+    ],
+    "get_methods": [
+      "На карту",
+      "Банковский счет"
+    ],
+    "repay_methods": [
+      "С карты",
+      "Банковский перевод",
+      "Терминалы"
+    ],
+    "license": "Лицензия ЦБ РФ №3210987654",
+    "link": "https://your-partner-site.com/moneyman?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "5",
+    "name": "Webbankir",
+    "logo": "https://via.placeholder.com/100x50?text=Webbankir",
+    "sum_min": 3000,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.0,
+    "rate_max": 1.0,
+    "approval_chance": 0.92,
+    "payout_speed_hours": 0.3,
+    "description": "Займы онлайн под 0% для новых клиентов. Быстрое решение.",
+    "requirements": [
+      "Возраст от 19 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты",
+      "СБП"
+    ],
+    "license": "Лицензия ЦБ РФ №4321098765",
+    "link": "https://your-partner-site.com/webbankir?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "6",
+    "name": "КредитПлюс",
+    "logo": "https://via.placeholder.com/100x50?text=CreditPlus",
+    "sum_min": 1000,
+    "sum_max": 15000,
+    "term_min": 5,
+    "term_max": 30,
+    "rate_min": 0.75,
+    "rate_max": 1.0,
+    "approval_chance": 0.85,
+    "payout_speed_hours": 0.7,
+    "description": "Простые и понятные условия. Кэшбэк за своевременное погашение.",
+    "requirements": [
+      "Возраст от 22 лет",
+      "Паспорт РФ",
+      "Постоянный доход"
+    ],
+    "get_methods": [
+      "На карту",
+      "Банковский счет"
+    ],
+    "repay_methods": [
+      "С карты",
+      "Contact"
+    ],
+    "license": "Лицензия ЦБ РФ №5432109876",
+    "link": "https://your-partner-site.com/creditplus?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "7",
+    "name": "Турбозайм",
+    "logo": "https://via.placeholder.com/100x50?text=Turbozaim",
+    "sum_min": 3000,
+    "sum_max": 50000,
+    "term_min": 7,
+    "term_max": 168,
+    "rate_min": 0.6,
+    "rate_max": 1.0,
+    "approval_chance": 0.88,
+    "payout_speed_hours": 0.2,
+    "description": "Деньги на карту за несколько минут. Только паспорт.",
+    "requirements": [
+      "Возраст от 21 года",
+      "Паспорт РФ",
+      "Именная банковская карта"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты",
+      "СБП"
+    ],
+    "license": "Лицензия ЦБ РФ №6543210987",
+    "link": "https://your-partner-site.com/turbozaim?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "8",
+    "name": "OneClickMoney",
+    "logo": "https://via.placeholder.com/100x50?text=OneClick",
+    "sum_min": 500,
+    "sum_max": 30000,
+    "term_min": 6,
+    "term_max": 60,
+    "rate_min": 0.9,
+    "rate_max": 1.0,
+    "approval_chance": 0.94,
+    "payout_speed_hours": 0.4,
+    "description": "Займы для всех. Рассматриваем заявки с любой кредитной историей.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "QIWI"
+    ],
+    "repay_methods": [
+      "С карты",
+      "QIWI"
+    ],
+    "license": "Лицензия ЦБ РФ №7654321098",
+    "link": "https://your-partner-site.com/oneclickmoney?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "9",
+    "name": "Лайм-Займ",
+    "logo": "https://via.placeholder.com/100x50?text=LimeZaim",
+    "sum_min": 2000,
+    "sum_max": 70000,
+    "term_min": 10,
+    "term_max": 168,
+    "rate_min": 0.4,
+    "rate_max": 1.0,
+    "approval_chance": 0.89,
+    "payout_speed_hours": 0.1,
+    "description": "Индивидуальные тарифы. Чем дольше с нами, тем ниже ставка.",
+    "requirements": [
+      "Возраст от 21 года",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "Банковский счет",
+      "QIWI"
+    ],
+    "repay_methods": [
+      "С карты",
+      "Банковский перевод"
+    ],
+    "license": "Лицензия ЦБ РФ №8765432109",
+    "link": "https://your-partner-site.com/limezaim?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "10",
+    "name": "Веб-займ",
+    "logo": "https://via.placeholder.com/100x50?text=WebZaim",
+    "sum_min": 1500,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.82,
+    "rate_max": 1.0,
+    "approval_chance": 0.91,
+    "payout_speed_hours": 0.6,
+    "description": "Надежный сервис онлайн-займов. Работаем круглосуточно.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №9876543210",
+    "link": "https://your-partner-site.com/webzaim?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "11",
+    "name": "Credit7",
+    "logo": "https://via.placeholder.com/100x50?text=Credit7",
+    "sum_min": 1000,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.0,
+    "rate_max": 1.0,
+    "approval_chance": 0.93,
+    "payout_speed_hours": 0.15,
+    "description": "Первый займ до 30 000 рублей без процентов. Решение за 7 минут.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №1122334455",
+    "link": "https://your-partner-site.com/credit7?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "12",
+    "name": "До зарплаты",
+    "logo": "https://via.placeholder.com/100x50?text=DoZarplaty",
+    "sum_min": 2000,
+    "sum_max": 100000,
+    "term_min": 7,
+    "term_max": 365,
+    "rate_min": 0.3,
+    "rate_max": 1.0,
+    "approval_chance": 0.80,
+    "payout_speed_hours": 2,
+    "description": "Крупные суммы на длительный срок. Есть оффлайн-отделения.",
+    "requirements": [
+      "Возраст от 20 лет",
+      "Паспорт РФ",
+      "Постоянная регистрация"
+    ],
+    "get_methods": [
+      "На карту",
+      "Наличными"
+    ],
+    "repay_methods": [
+      "С карты",
+      "Наличными"
+    ],
+    "license": "Лицензия ЦБ РФ №2233445566",
+    "link": "https://your-partner-site.com/dozarplaty?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "13",
+    "name": "Zaymer",
+    "logo": "https://via.placeholder.com/100x50?text=Zaymer",
+    "sum_min": 2000,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.76,
+    "rate_max": 1.0,
+    "approval_chance": 0.97,
+    "payout_speed_hours": 0.05,
+    "description": "Робот онлайн-займов. Автоматическое одобрение и выдача 24/7.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "QIWI",
+      "ЮMoney"
+    ],
+    "repay_methods": [
+      "С карты",
+      "QIWI",
+      "ЮMoney"
+    ],
+    "license": "Лицензия ЦБ РФ №3344556677",
+    "link": "https://your-partner-site.com/zaymer?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "14",
+    "name": "Platiza",
+    "logo": "https://via.placeholder.com/100x50?text=Platiza",
+    "sum_min": 3000,
+    "sum_max": 15000,
+    "term_min": 5,
+    "term_max": 45,
+    "rate_min": 0.85,
+    "rate_max": 1.0,
+    "approval_chance": 0.84,
+    "payout_speed_hours": 1.5,
+    "description": "Возможность продления займа. Улучшение кредитной истории.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "QIWI"
+    ],
+    "repay_methods": [
+      "С карты",
+      "QIWI"
+    ],
+    "license": "Лицензия ЦБ РФ №4455667788",
+    "link": "https://your-partner-site.com/platiza?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "15",
+    "name": "СрочноДеньги",
+    "logo": "https://via.placeholder.com/100x50?text=Srochno",
+    "sum_min": 1000,
+    "sum_max": 100000,
+    "term_min": 1,
+    "term_max": 180,
+    "rate_min": 0.6,
+    "rate_max": 1.0,
+    "approval_chance": 0.82,
+    "payout_speed_hours": 3,
+    "description": "Займы наличными и на карту. Широкая сеть офисов по всей стране.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту",
+      "Наличными"
+    ],
+    "repay_methods": [
+      "Наличными",
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №5566778899",
+    "link": "https://your-partner-site.com/srochnodengi?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "16",
+    "name": "Финтерра",
+    "logo": "https://via.placeholder.com/100x50?text=Finterra",
+    "sum_min": 2000,
+    "sum_max": 30000,
+    "term_min": 1,
+    "term_max": 30,
+    "rate_min": 0.7,
+    "rate_max": 1.0,
+    "approval_chance": 0.86,
+    "payout_speed_hours": 2,
+    "description": "Займы онлайн и в офисах. Специальные условия для пенсионеров.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ",
+      "СНИЛС"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты",
+      "В офисе"
+    ],
+    "license": "Лицензия ЦБ РФ №6677889900",
+    "link": "https://your-partner-site.com/finterra?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "17",
+    "name": "GreenMoney",
+    "logo": "https://via.placeholder.com/100x50?text=GreenMoney",
+    "sum_min": 2000,
+    "sum_max": 35000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.8,
+    "rate_max": 1.0,
+    "approval_chance": 0.90,
+    "payout_speed_hours": 0.5,
+    "description": "Экологичные займы. Часть прибыли идет на посадку деревьев.",
+    "requirements": [
+      "Возраст от 20 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №7788990011",
+    "link": "https://your-partner-site.com/greenmoney?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "18",
+    "name": "МигКредит",
+    "logo": "https://via.placeholder.com/100x50?text=MigCredit",
+    "sum_min": 3000,
+    "sum_max": 100000,
+    "term_min": 10,
+    "term_max": 336,
+    "rate_min": 0.25,
+    "rate_max": 1.0,
+    "approval_chance": 0.78,
+    "payout_speed_hours": 24,
+    "description": "Крупные суммы на длительный срок. Возможно погашение равными платежами.",
+    "requirements": [
+      "Возраст от 21 года",
+      "Паспорт РФ",
+      "Стабильный доход"
+    ],
+    "get_methods": [
+      "На карту",
+      "Contact"
+    ],
+    "repay_methods": [
+      "С карты",
+      "Банковский перевод"
+    ],
+    "license": "Лицензия ЦБ РФ №8899001122",
+    "link": "https://your-partner-site.com/migcredit?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "19",
+    "name": "BelkaCredit",
+    "logo": "https://via.placeholder.com/100x50?text=Belka",
+    "sum_min": 1000,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.0,
+    "rate_max": 1.0,
+    "approval_chance": 0.91,
+    "payout_speed_hours": 0.4,
+    "description": "Первый займ без процентов. Быстро и просто, как запасы белки.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №9900112233",
+    "link": "https://your-partner-site.com/belkacredit?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "20",
+    "name": "Надо Денег",
+    "logo": "https://via.placeholder.com/100x50?text=NadoDeneg",
+    "sum_min": 1000,
+    "sum_max": 30000,
+    "term_min": 7,
+    "term_max": 30,
+    "rate_min": 0.0,
+    "rate_max": 1.0,
+    "approval_chance": 0.95,
+    "payout_speed_hours": 0.2,
+    "description": "Когда надо денег - мы рядом. Первый займ бесплатно.",
+    "requirements": [
+      "Возраст от 18 лет",
+      "Паспорт РФ"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №1212323243",
+    "link": "https://your-partner-site.com/nadodeneg?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  },
+  {
+    "id": "21",
+    "name": "Zaimon",
+    "logo": "https://via.placeholder.com/100x50?text=Zaimon",
+    "sum_min": 2500,
+    "sum_max": 12000,
+    "term_min": 5,
+    "term_max": 25,
+    "rate_min": 0.9,
+    "rate_max": 1.0,
+    "approval_chance": 0.83,
+    "payout_speed_hours": 1,
+    "description": "Простой и быстрый займ на небольшие суммы.",
+    "requirements": [
+      "Возраст от 22 лет",
+      "Паспорт РФ",
+      "Прописка"
+    ],
+    "get_methods": [
+      "На карту"
+    ],
+    "repay_methods": [
+      "С карты"
+    ],
+    "license": "Лицензия ЦБ РФ №4343545465",
+    "link": "https://your-partner-site.com/zaimon?utm_source=your_service&utm_medium=vitrina&utm_campaign=mfo_selection"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "name": "vk-mini-app-babkymanki",
+  "version": "1.0.0",
+  "description": "VK Mini App Babkymanki",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vkontakte/vk-bridge": "^2.6.0",
+    "@vkontakte/vkui": "^5.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.23.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.3.9"
+  }
+}

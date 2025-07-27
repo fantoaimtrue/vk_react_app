@@ -1,0 +1,118 @@
+.wizard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.wizard-modal {
+  background: #012017;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  width: 90%;
+  max-width: 700px;
+  position: relative;
+  animation: slide-in 0.3s ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 2.5em;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  line-height: 1;
+}
+.close-button:hover {
+  color: #fff;
+}
+
+
+.wizard-step h2 {
+  text-align: center;
+  margin-top: 0;
+  color: #fff;
+}
+.wizard-step p {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 25px;
+}
+
+.wizard-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+.wizard-option {
+  display: grid;
+  grid-template-areas: "icon title" "icon description";
+  grid-template-columns: auto 1fr;
+  gap: 5px 15px;
+  padding: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wizard-option:hover {
+  border-color: #ED713C;
+  transform: translateY(-3px);
+  background-color: rgba(237, 113, 60, 0.1);
+}
+
+.wizard-option .icon {
+  grid-area: icon;
+  font-size: 2.5em;
+  align-self: center;
+}
+.wizard-option .title {
+  grid-area: title;
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #fff;
+}
+.wizard-option .description {
+  grid-area: description;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9em;
+}
+
+@media (max-width: 700px) {
+  .wizard-options {
+    grid-template-columns: 1fr;
+  }
+  .wizard-modal {
+    padding: 20px;
+  }
+  .wizard-option {
+    padding: 15px;
+  }
+} 

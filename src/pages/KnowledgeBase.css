@@ -1,0 +1,79 @@
+.knowledge-base-container {
+  padding: 10px;
+}
+
+.knowledge-base-container h1 {
+  text-align: center;
+  color: #fff;
+}
+
+.page-description {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 30px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1em;
+}
+
+.kb-nav {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.back-to-loans-link {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #ED713C;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.back-to-loans-link:hover {
+  background-color: transparent;
+  color: #ED713C;
+  border-color: #ED713C;
+}
+
+.articles-list {
+  display: grid;
+  gap: 20px;
+}
+
+.article-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.article-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 25px;
+  transition: all 0.2s ease-in-out;
+}
+
+.article-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border-color: #ED713C;
+}
+
+.article-title {
+  margin-top: 0;
+  color: #fff;
+}
+
+.article-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.read-more {
+  display: inline-block;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #ED713C;
+} 

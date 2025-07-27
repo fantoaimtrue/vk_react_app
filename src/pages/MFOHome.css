@@ -1,0 +1,91 @@
+.toolbar {
+  display: flex;
+  justify-content: center; /* Центрируем одну кнопку */
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.wizard-button {
+  background-color: #ED713C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px; /* Делаем кнопку чуть больше */
+  font-size: 1.1em; /* Увеличиваем шрифт */
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-grow: 0; /* Убираем растягивание */
+}
+
+.wizard-button:hover {
+  background-color: #fff;
+  color: #ED713C;
+  transform: translateY(-2px);
+}
+
+.filter-button {
+    background-color: transparent;
+    border: 2px solid #ED713C;
+}
+
+.filter-panel {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px; /* Увеличиваем отступ */
+    animation: fade-in 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-panel-title {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.partners-info {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.partners-info h3 {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.controls-panel {
+  display: flex;
+  justify-content: center; /* Центрируем контролы сортировки */
+}
+
+.mfo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  min-height: 300px; /* Добавим минимальную высоту для корректного отображения спиннера */
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .mfo-list {
+    grid-template-columns: 1fr; /* Одна колонка на мобильных */
+    gap: 20px;
+  }
+} 

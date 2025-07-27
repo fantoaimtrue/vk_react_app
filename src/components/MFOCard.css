@@ -1,0 +1,139 @@
+/* Стили для отдельной карточки МФО */
+.mfo-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+}
+
+.mfo-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(237, 113, 60, 0.5);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+/* Стили для неактивной карточки */
+.mfo-card.ineligible {
+  opacity: 0.4;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.mfo-card.ineligible:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mfo-card-header {
+  text-align: center;
+  padding: 15px;
+}
+
+.mfo-logo {
+  height: 50px;
+  width: 120px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 2.2em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mfo-name {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15em;
+}
+
+.mfo-card-body {
+  padding: 15px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mfo-params-static p {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mfo-calculation {
+  background-color: rgba(237, 113, 60, 0.15);
+  border: 1px solid #ED713C;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.mfo-calculation p {
+  margin: 5px 0;
+  font-size: 1.05em;
+}
+
+.mfo-calculation strong {
+  color: #ED713C;
+  font-size: 1.1em;
+}
+
+.mfo-card-footer {
+  padding: 15px;
+  margin-top: auto; /* Прижимает футер к низу */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.details-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ED713C;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.details-link:hover {
+  background-color: #fff;
+  color: #ED713C;
+}
+
+.more-info-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-size: 0.9em;
+}
+
+.more-info-link:hover {
+  color: #fff;
+} 
+
+@media (max-width: 620px) {
+  .mfo-logo {
+    height: 40px;
+    font-size: 2em;
+  }
+  .mfo-card-body {
+    padding: 10px;
+  }
+} 

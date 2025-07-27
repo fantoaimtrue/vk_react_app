@@ -1,0 +1,140 @@
+.mfo-detail-card {
+  padding: 25px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 600px) {
+  .mfo-detail-card {
+    padding: 15px;
+  }
+  .mfo-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .mfo-name-detail {
+    font-size: 1.6em;
+  }
+  .mfo-methods {
+    grid-template-columns: 1fr;
+  }
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #007bff;
+  text-decoration: none;
+}
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.mfo-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 20px;
+}
+
+.mfo-logo-large {
+  width: 150px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 3.5em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mfo-name-detail {
+  margin: 0;
+  color: #fff;
+  font-size: 2em;
+}
+
+.mfo-description {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 25px;
+  font-size: 1.1em;
+}
+
+.mfo-params {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.param-item {
+  font-size: 1.1em;
+}
+.param-item strong {
+    color: #ED713C;
+}
+
+.mfo-requirements, .mfo-methods {
+  margin-bottom: 25px;
+}
+
+.mfo-requirements h3, .mfo-methods h3 {
+  color: #fff;
+  border-bottom: 2px solid #ED713C;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.mfo-requirements ul, .mfo-methods ul {
+  list-style-type: '✓';
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.9);
+}
+.mfo-requirements ul li, .mfo-methods ul li {
+  margin-bottom: 10px;
+  padding-left: 10px;
+}
+
+.mfo-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.mfo-license {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.apply-button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #fff;
+  background-color: #ED713C;
+  border: none;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.apply-button:hover {
+  background-color: #fff;
+  color: #ED713C;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(237, 113, 60, 0.3);
+} 
