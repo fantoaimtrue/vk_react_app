@@ -1,4 +1,5 @@
-import React from 'react';
+import vkBridge from '@vkontakte/vk-bridge';
+import React, { useEffect } from 'react';
 import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import ArticlePage from './pages/ArticlePage';
@@ -7,6 +8,10 @@ import MFODetailWrapper from './pages/MFODetailWrapper';
 import MFOHome from './pages/MFOHome';
 
 function App() {
+  useEffect(() => {
+    vkBridge.send('VKWebAppInit');
+  }, []);
+
   return (
     <Router>
       <div className="app-container">
