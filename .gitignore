@@ -3,5 +3,9 @@
 
 # Игнорируем файлы окружения, содержащие секреты
 .env
-backend/.env 
+backend/.env
+
+# Игнорируем данные Certbot
+data/
+
 node_modules
