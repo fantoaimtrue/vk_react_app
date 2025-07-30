@@ -22,7 +22,11 @@ const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
     <div className={`mfo-card ${isEligible ? '' : 'ineligible'}`}>
       <div className="mfo-card-header">
         <div className="mfo-logo">
-          <span role="img" aria-label="logo icon">🏦</span>
+          {mfo.logo_url ? (
+            <img src={mfo.logo_url} alt={`${mfo.name} logo`} className="mfo-logo-img" />
+          ) : (
+            <span role="img" aria-label="logo icon">🏦</span>
+          )}
         </div>
         <h3 className="mfo-name">{mfo.name}</h3>
       </div>
