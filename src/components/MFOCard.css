@@ -33,17 +33,19 @@
 }
 
 .mfo-logo {
-  height: 50px;
-  width: 120px;
-  margin: 0 auto 10px;
+  width: 60px; /* Зададим фиксированную ширину */
+  height: 60px; /* и высоту для контейнера логотипа */
+  margin-right: 15px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  font-size: 2.2em;
-  color: rgba(255, 255, 255, 0.7);
+  align-items: center;
+  overflow: hidden; /* Скроем все, что выходит за пределы */
+  border-radius: 8px; /* Слегка скруглим углы */
+  background-color: #f0f0f0; /* Добавим фон для случаев, когда изображение не покрывает все пространство */
+}
+
+.mfo-logo span {
+  font-size: 30px; /* Увеличим иконку-заглушку */
 }
 
 .mfo-name {
@@ -129,9 +131,10 @@
 } 
 
 .mfo-logo-img {
-  max-width: 100%; /* Убедимся, что изображение не выходит за пределы контейнера */
-  height: auto; /* Сохраняем пропорции изображения */
-  display: block; /* Убираем лишние отступы под изображением */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Масштабирует изображение, чтобы оно полностью покрыло контейнер, сохраняя пропорции. Может обрезать часть изображения. */
+  display: block;
 }
 
 @media (max-width: 620px) {
