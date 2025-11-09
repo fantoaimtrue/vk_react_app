@@ -2,16 +2,12 @@
   background-color: transparent;
   border-radius: 8px;
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
+/* Заголовок калькулятора теперь в модальном окне, этот класс не используется */
 .calculator-title {
-  text-align: center;
-  color: var(--text-primary);
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  display: none;
 }
 
 .calculator-inputs {
@@ -28,7 +24,7 @@
 .input-group label {
   font-weight: var(--font-weight-medium);
   margin-bottom: 12px;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: var(--font-size-sm);
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
@@ -44,10 +40,10 @@
 .calc-button {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  background: rgba(0, 0, 0, 0.2);
-  color: white;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
   font-size: 24px;
   font-weight: bold;
   cursor: pointer;
@@ -55,12 +51,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
 }
 
 .calc-button:hover:not(:disabled) {
-  background: #ED713C;
-  border-color: #ED713C;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
   transform: scale(1.05);
 }
 
@@ -76,20 +72,20 @@
 .input-with-buttons input[type="text"] {
   flex: 1;
   padding: 12px;
-  border: 2px solid var(--border-primary);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--r-sm);
   font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-bold);
   text-align: center;
   transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
 }
 
 .input-with-buttons input[type="text"]:focus {
   outline: none;
-  border-color: var(--border-accent);
+  border-color: var(--accent);
+  background: var(--surface);
   box-shadow: 0 0 0 3px rgba(33, 160, 56, 0.1);
 }
 
@@ -113,9 +109,15 @@
 .input-group input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
   height: 8px;
-  background: var(--bg-secondary);
+  background: linear-gradient(to right, 
+    #EDF1F3 0%,
+    #EDF1F3 70%,
+    #E0E4E7 70%,
+    #E0E4E7 100%
+  );
   border-radius: 6px;
-  border: 1px solid var(--border-secondary);
+  border: none;
+  position: relative;
 }
 
 /* Thumb (handle) styles for WebKit */
@@ -124,25 +126,30 @@
   height: 24px;
   width: 24px;
   border-radius: 50%;
-  background: var(--secondary-color);
+  background: var(--accent);
   cursor: pointer;
   margin-top: -9px; /* Vertically center the thumb */
-  border: 3px solid var(--text-primary);
-  box-shadow: var(--shadow-medium), 0 0 10px rgba(33, 160, 56, 0.5);
+  border: 3px solid var(--surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(33, 160, 56, 0.2);
   transition: all var(--transition-fast);
 }
 .input-group input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: var(--shadow-large), 0 0 15px rgba(33, 160, 56, 0.7);
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3), 0 0 0 1px var(--accent);
 }
 
 /* Track styles for Firefox */
 .input-group input[type="range"]::-moz-range-track {
   width: 100%;
   height: 8px;
-  background: var(--bg-secondary);
+  background: linear-gradient(to right, 
+    #EDF1F3 0%,
+    #EDF1F3 70%,
+    #E0E4E7 70%,
+    #E0E4E7 100%
+  );
   border-radius: 6px;
-  border: 1px solid var(--border-secondary);
+  border: none;
 }
 
 /* Thumb (handle) styles for Firefox */
@@ -150,15 +157,15 @@
   height: 24px;
   width: 24px;
   border-radius: 50%;
-  background: var(--secondary-color);
+  background: var(--accent);
   cursor: pointer;
-  border: 3px solid var(--text-primary);
-  box-shadow: var(--shadow-medium), 0 0 10px rgba(33, 160, 56, 0.5);
+  border: 3px solid var(--surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(33, 160, 56, 0.2);
   transition: all var(--transition-fast);
 }
 .input-group input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: var(--shadow-large), 0 0 15px rgba(33, 160, 56, 0.7);
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3), 0 0 0 1px var(--accent);
 }
 
 
@@ -236,5 +243,58 @@
   
   .input-group input[type="range"] {
     margin-top: 5px;
+  }
+}
+
+/* Быстрые кнопки выбора */
+.quick-buttons-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.quick-button {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-button:hover {
+  background: var(--surface-tint);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.quick-button-active {
+  background: var(--grad-cta);
+  border-color: var(--accent);
+  color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.25);
+}
+
+.quick-button-active:hover {
+  filter: saturate(1.05) brightness(1.02);
+}
+
+@media (max-width: 480px) {
+  .quick-buttons-group {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .quick-button {
+    padding: 8px 12px;
+    font-size: 0.85em;
+    min-width: 70px;
   }
 } 

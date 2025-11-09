@@ -16,6 +16,28 @@ function App() {
   console.log('--- App Component Render START ---');
   const [showHelpModal, setShowHelpModal] = useState(false);
 
+  // Блокируем прокрутку body когда модальное окно открыто
+  useEffect(() => {
+    if (showHelpModal) {
+      // Сохраняем текущую позицию прокрутки
+      const scrollY = window.scrollY;
+      // Блокируем прокрутку body
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Восстанавливаем прокрутку body
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showHelpModal]);
+
   // Инициализация UTM трекера для отслеживания меток
   const {
     utmParams,
@@ -113,7 +135,7 @@ function App() {
         {showHelpModal && (
           <div className="modal-overlay" onClick={() => setShowHelpModal(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={() => setShowHelpModal(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowHelpModal(false)} aria-label="Закрыть">×</button>
               <h2 className="modal-title">Почему отказывают в займе?</h2>
               <div className="modal-body">
                 <div className="help-tip">
@@ -141,12 +163,14 @@ function App() {
                   </a>
                 </div>
               </div>
-              <button
-                className="modal-understand-button"
-                onClick={() => setShowHelpModal(false)}
-              >
-                Понятно
-              </button>
+              <div className="modal-footer">
+                <button
+                  className="modal-understand-button"
+                  onClick={() => setShowHelpModal(false)}
+                >
+                  Понятно
+                </button>
+              </div>
             </div>
           </div>
         )}

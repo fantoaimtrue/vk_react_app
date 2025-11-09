@@ -1,0 +1,37 @@
+:root {
+  /* Базовые зелёные SBER-like */
+  --sber-green: #21A038;          /* основной фирменный зелёный */
+  --sber-teal: #0DBA7D;           /* бирюзовый акцент */
+  --sber-green-dark: #0F5C3A;     /* тёмный фон/градиентная тень */
+  --sber-green-bg: #0A3F2C;       /* общий фон страницы */
+
+  /* Нейтрали */
+  --text: #0C0C0D;                /* основной тёмный */
+  --muted: #6B7280;               /* подписи */
+  --line: #E6E8EB;                /* границы на светлом */
+  --line-dark: rgba(255, 255, 255, 0.14); /* границы на тёмном */
+
+  /* Поверхности */
+  --surface: #FFFFFF;             /* белая карточка */
+  --surface-tint: #F7F9FA;        /* поля/блоки внутри карточки */
+
+  /* Акценты */
+  --accent: #21A038;              /* основной акцент (кнопки/ссылки) */
+  --accent-2: #0DBA7D;            /* второй цвет градиента */
+  --warn: #FFC107;
+  --danger: #FF5A67;
+
+  /* Градиенты */
+  --grad-cta: linear-gradient(135deg, #21A038 0%, #0DBA7D 100%);
+  --grad-hero: radial-gradient(60% 60% at 0% 0%, rgba(33, 160, 56, 0.18), transparent 55%),
+               radial-gradient(50% 50% at 100% 0%, rgba(13, 186, 125, 0.16), transparent 60%),
+               linear-gradient(180deg, #0A3F2C 0%, #093727 100%);
+
+  /* Тени/радиусы */
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 10px;
+  --shadow-1: 0 10px 24px rgba(1, 27, 17, 0.18);
+  --shadow-2: 0 4px 14px rgba(1, 27, 17, 0.12);
+}
+

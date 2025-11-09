@@ -114,7 +114,7 @@ def mfo_list(request):
     """
     try:
         # URL внешнего API
-        api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list-suc"
+        api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list-open"
         
         headers = {
             'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
@@ -139,7 +139,17 @@ def mfo_list(request):
             # --- Извлекаем данные ПЕРЕД синхронизацией (чтобы они были доступны даже при ошибке) ---
             label_text = item.get('label_text', '')
             match = re.search(r'(\d+)%', label_text)
-            approval_chance = int(match.group(1)) if match else max(100 - item.get('order', 5) * 5, 75)
+            # Шанс одобрения от 93 до 98%
+            if match:
+                # Если процент найден в label_text, проверяем и ограничиваем диапазоном 93-98
+                parsed_chance = int(match.group(1))
+                approval_chance = max(93, min(98, parsed_chance))
+            else:
+                # Генерируем значение от 93 до 98 на основе order (для разнообразия между офферами)
+                order = item.get('order', 1)
+                # Используем order для создания значения в диапазоне 93-98
+                # order от 1 до 8 -> значение от 98 до 93
+                approval_chance = 98 - min(5, (order - 1) % 6)
             payout_speed_hours = 0.5 if 'моментально' in label_text.lower() else 24
 
             try:
@@ -166,6 +176,11 @@ def mfo_list(request):
                         # Если объект уже существовал, обновляем его
                         mfo_instance.name = offer_data.get('product_name')
                         mfo_instance.logo_url = offer_data.get('image_link')
+                        mfo_instance.approval_chance = approval_chance  # Обновляем шанс одобрения (93-98%)
+                        mfo_instance.payout_speed_hours = payout_speed_hours  # Обновляем скорость выплаты
+                        mfo_instance.term_min = offer_data.get('loan_term_from')
+                        mfo_instance.term_max = offer_data.get('loan_term_to')
+                        mfo_instance.rate = float(offer_data.get('daily_percentage_min', 0.8))
                         # ... (обновляем другие поля, но НЕ ссылку)
                         mfo_instance.sum_min = int(float(offer_data.get('amount_min', 0)))
                         mfo_instance.sum_max = int(float(offer_data.get('amount_max', 0)))

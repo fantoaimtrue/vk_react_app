@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import './MFOCard.css';
 
 const MFOCardWithUTM = ({
@@ -45,76 +45,91 @@ const MFOCardWithUTM = ({
         isButtonDisabled = true;
     }
 
+    // Определяем цвет прогресс-бара и текста шанса одобрения
+    const getApprovalColor = (chance) => {
+        if (chance >= 80) return 'success';
+        if (chance >= 50) return 'warning';
+        return 'low';
+    };
+
+    const approvalColor = mfo.approval_chance ? getApprovalColor(mfo.approval_chance) : 'success';
+    const approvalChance = mfo.approval_chance || 0;
+    
+    // Время выдачи от 5 до 8 минут (фиксированное для каждой карточки на основе ID)
+    const payoutMinutes = useMemo(() => {
+        // Используем ID МФО для генерации стабильного значения от 5 до 8
+        const idHash = (mfo.id || 0).toString().split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (idHash % 4) + 5; // Всегда от 5 до 8
+    }, [mfo.id]);
+
     return (
-        <div className={`mfo-card ${isEligible ? '' : 'ineligible'}`}>
-            <div className="mfo-card-header">
-                <div className="mfo-logo">
+        <div className={`mfo-card-new ${isEligible ? '' : 'ineligible'}`}>
+            <div className="mfo-card-header-new">
+                <div className="mfo-logo-new">
                     {mfo.logo_url ? (
-                        <img src={mfo.logo_url} alt={`${mfo.name} logo`} className="mfo-logo-img" />
+                        <img src={mfo.logo_url} alt={`${mfo.name} logo`} className="mfo-logo-img-new" />
                     ) : (
-                        <div className="mfo-logo-placeholder">{mfo.name.charAt(0)}</div>
+                        <div className="mfo-logo-placeholder-new">{mfo.name.charAt(0)}</div>
                     )}
                 </div>
-                <div className="mfo-info">
-                    <h3 className="mfo-name">{mfo.name}</h3>
-                    {isEligible && mfo.approval_chance && (
-                        <div className="mfo-approval-highlight">
-                            <span className="approval-text">Шанс одобрения:</span>
-                            <span className="approval-percent">{mfo.approval_chance}%</span>
+                <div className="mfo-info-new">
+                    <h3 className="mfo-name-new">{mfo.name}</h3>
+                    {isEligible && approvalChance > 0 && (
+                        <div className="mfo-approval-progress">
+                            <span className="approval-label">Шанс одобрения:</span>
+                            <div className="approval-progress-bar" data-state={approvalColor === 'success' ? 'high' : approvalColor === 'warning' ? 'mid' : 'low'}>
+                                <i 
+                                    className={`approval-progress-fill approval-${approvalColor}`}
+                                    style={{ width: `${approvalChance}%`, '--p': `${approvalChance}%` }}
+                                ></i>
+                            </div>
+                            <span className={`approval-percent approval-${approvalColor}`}>{approvalChance}%</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="mfo-card-body">
-                <div className="loan-details-compact">
-                    <div className="detail-item">
-                        <div className="detail-content">
-                            <span className="detail-label">Сумма</span>
-                            <span className="detail-value">
-                                {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0} ₽
-                            </span>
-                        </div>
+            <div className="mfo-card-body-new">
+                <div className="loan-details-grid">
+                    <div className="detail-box">
+                        <span className="detail-label-new">СУММА</span>
+                        <span className="detail-value-new">
+                            {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0} ₽
+                        </span>
                     </div>
-                    <div className="detail-item">
-                        <div className="detail-content">
-                            <span className="detail-label">Срок</span>
-                            <span className="detail-value">
-                                {mfo.term_min || 0} - {mfo.term_max || 0} дней
-                            </span>
-                        </div>
+                    <div className="detail-box">
+                        <span className="detail-label-new">СРОК</span>
+                        <span className="detail-value-new">
+                            {mfo.term_min || 0} - {mfo.term_max || 0} дней
+                        </span>
                     </div>
-                    <div className="detail-item">
-                        <div className="detail-content">
-                            <span className="detail-label">Ставка</span>
-                            <span className={`detail-value ${isZeroRate ? 'highlight-zero' : ''}`}>
-                                {mfo.rate || 0}% в день
-                            </span>
-                        </div>
+                    <div className="detail-box">
+                        <span className="detail-label-new">СТАВКА</span>
+                        <span className={`detail-value-new ${isZeroRate ? 'highlight-zero' : ''}`}>
+                            {mfo.rate || 0}% в день
+                        </span>
                     </div>
-                    <div className="detail-item">
-                        <div className="detail-content">
-                            <span className="detail-label">Выплата</span>
-                            <span className={`detail-value ${isFastPayout ? 'highlight-fast' : ''}`}>
-                                {Math.round((mfo.payout_speed_hours || 0) * 60)} мин
-                            </span>
-                        </div>
+                    <div className="detail-box">
+                        <span className="detail-label-new">ВЫПЛАТА</span>
+                        <span className="detail-value-new highlight-fast">
+                            {payoutMinutes} мин
+                        </span>
                     </div>
                 </div>
 
                 {isEligible && (
-                    <div className="loan-calculation-box">
-                        <div className="calculation-item">
-                            <span className="calc-label">Сумма займа:</span>
-                            <span className="calc-value">{requestedAmount.toLocaleString()} ₽</span>
+                    <div className="loan-calculation-box-new">
+                        <div className="calculation-row">
+                            <span className="calc-label-new">Сумма займа:</span>
+                            <span className="calc-value-new">{requestedAmount.toLocaleString()} ₽</span>
                         </div>
-                        <div className="calculation-item">
-                            <span className="calc-label">Переплата:</span>
-                            <span className="calc-value">{calculateOverpayment().toLocaleString()} ₽</span>
+                        <div className="calculation-row">
+                            <span className="calc-label-new">Переплата:</span>
+                            <span className="calc-value-new">{calculateOverpayment().toLocaleString()} ₽</span>
                         </div>
-                        <div className="calculation-total">
-                            <span className="total-label">К возврату:</span>
-                            <span className="total-value">{totalAmount.toLocaleString()} ₽</span>
+                        <div className="calculation-row calculation-total-new">
+                            <span className="calc-label-new">К возврату:</span>
+                            <span className="calc-value-new calc-total-value">{totalAmount.toLocaleString()} ₽</span>
                         </div>
                     </div>
                 )}

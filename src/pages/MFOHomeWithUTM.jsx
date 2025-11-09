@@ -17,6 +17,7 @@ const MFOHomeWithUTM = () => {
     logger.info('🔴 [MFOHomeWithUTM] Компонент рендерится');
     
     const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [amount, setAmount] = useState(15000);
     const [term, setTerm] = useState(15);
     const [itemsToShow, setItemsToShow] = useState(INITIAL_ITEMS_TO_SHOW);
@@ -138,9 +139,9 @@ const MFOHomeWithUTM = () => {
 
     if (loading && !filteredMfos?.length) {
         return (
-            <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <p>Загрузка предложений...</p>
+            <div className="offers-loading-container">
+                <div className="offers-loading-spinner"></div>
+                <p className="offers-loading-text">Загрузка предложений...</p>
             </div>
         );
     }
@@ -167,25 +168,80 @@ const MFOHomeWithUTM = () => {
                 />
             )}
             <div style={{ padding: '0 10px', maxWidth: '100%', boxSizing: 'border-box' }}>
-                <div className="loan-calculator-section" style={{ marginBottom: '30px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 className="loan-calculator-title" style={{ margin: 0 }}>Выберите условия займа</h3>
-                        <button onClick={() => setIsWizardOpen(true)} className="help-wizard-button">Помощь в выборе</button>
-                    </div>
-                    <LoanCalculator
-                        amount={amount}
-                        onAmountChange={setAmount}
-                        term={term}
-                        onTermChange={setTerm}
-                        maxAmount={maxLoanAmount}
-                        maxTerm={90}
-                    />
-                    <button className="offer-button offer-button-hover" onClick={() => document.querySelector('.mfo-list')?.scrollIntoView({ behavior: 'smooth' })}>
-                        Показать предложения
+                {/* Кнопка для открытия/закрытия калькулятора */}
+                <div style={{ textAlign: 'center', marginBottom: '20px', padding: '20px' }}>
+                    <button 
+                        onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
+                        className={`open-calculator-button ${isCalculatorOpen ? 'calculator-open' : ''}`}
+                        style={{
+                            background: isCalculatorOpen 
+                                ? 'linear-gradient(135deg, #DC5A2A 0%, #ED713C 100%)' 
+                                : 'linear-gradient(135deg, #ED713C 0%, #DC5A2A 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '16px 32px',
+                            fontSize: '1.1em',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 15px rgba(237, 113, 60, 0.4)',
+                            transition: 'all 0.3s ease',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        <span>{isCalculatorOpen ? 'Скрыть калькулятор' : 'Выбрать сумму и срок'}</span>
+                        <span style={{ 
+                            transition: 'transform 0.3s ease',
+                            transform: isCalculatorOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                            display: 'inline-block'
+                        }}>▼</span>
                     </button>
                 </div>
 
-                <div className="mfo-list" style={{ marginTop: '30px' }}>
+                {/* Калькулятор с анимацией появления */}
+                <div className={`calculator-slide-container ${isCalculatorOpen ? 'calculator-visible' : ''}`}>
+                    <div className="calculator-slide-content">
+                        <LoanCalculator
+                            amount={amount}
+                            onAmountChange={setAmount}
+                            term={term}
+                            onTermChange={setTerm}
+                            maxAmount={maxLoanAmount}
+                            maxTerm={90}
+                        />
+                        <button 
+                            className="calculator-show-offers-button"
+                            onClick={() => {
+                                // Закрываем калькулятор сразу
+                                setIsCalculatorOpen(false);
+                                
+                                // Ждем завершения анимации закрытия калькулятора перед скроллом
+                                // Это предотвращает двойной скачок: сначала калькулятор закрывается,
+                                // затем выполняется плавный скролл к списку офферов
+                                setTimeout(() => {
+                                    const mfoListElement = document.querySelector('.mfo-list');
+                                    if (mfoListElement) {
+                                        const elementRect = mfoListElement.getBoundingClientRect();
+                                        const elementTop = elementRect.top + window.pageYOffset;
+                                        const offset = 100; // Отступ от верха экрана
+                                        
+                                        // Выполняем скролл только один раз после закрытия калькулятора
+                                        window.scrollTo({
+                                            top: Math.max(0, elementTop - offset),
+                                            behavior: 'smooth'
+                                        });
+                                    }
+                                }, 450); // Время анимации закрытия калькулятора (400ms) + небольшой запас
+                            }}
+                        >
+                            Показать предложения
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mfo-list" style={{ marginTop: '20px', scrollMarginTop: '100px' }}>
                     {filteredMfos && filteredMfos.length > 0 ? (
                         filteredMfos.slice(0, itemsToShow).map((mfo) => (
                             <MFOCardWithUTM
@@ -210,8 +266,9 @@ const MFOHomeWithUTM = () => {
                 </div>
 
                 {itemsToShow < filteredMfos.length && (
-                    <div ref={loadMoreRef} style={{ textAlign: 'center', padding: '20px' }}>
-                        <p style={{ fontSize: '0.9em', color: '#999' }}>Загружаем еще...</p>
+                    <div ref={loadMoreRef} className="offers-load-more-container">
+                        <div className="offers-load-more-spinner"></div>
+                        <p className="offers-load-more-text">Загружаем еще предложения...</p>
                     </div>
                 )}
             </div>
