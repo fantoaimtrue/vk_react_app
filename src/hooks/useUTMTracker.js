@@ -68,7 +68,7 @@ export const useUTMTracker = () => {
 
     // Дополнительные параметры для арбитража
     const arbKeys = [
-      'ref', 'ref_source', 'ad_id', 'banner_id', 'campaign_id', 'user_id', 'click_id', 'sub_id',
+      'ref', 'ref_source', 'ref_campaign', 'ref_ad', 'ad_id', 'banner_id', 'campaign_id', 'user_id', 'click_id', 'sub_id',
       's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8',
       'website_slug', 'shopwindow_type', 'offer_slug', 'offer_id', 'cid', 'utm_geo', 'aid'
     ];
@@ -78,7 +78,15 @@ export const useUTMTracker = () => {
     
     // Извлекаем параметры из hash (#param=value)
     // VK Mini Apps часто передают параметры в хеше!
-    let hashString = window.location.hash.substring(1); // убираем #
+    // Пробуем сначала получить оригинальный hash из sessionStorage (если он был сохранен)
+    let hashToUse = window.location.hash;
+    const savedHash = sessionStorage.getItem('originalHash');
+    if (savedHash && savedHash !== '#' && savedHash !== '#/') {
+      hashToUse = savedHash;
+      console.log('📦 [extractUTMFromURL] Используем сохраненный hash:', savedHash);
+    }
+    
+    let hashString = hashToUse.substring(1); // убираем #
     // Клиент VK может добавлять / в начало хеша при переходе из чатов
     if (hashString.startsWith('/')) {
       hashString = hashString.substring(1);
@@ -93,6 +101,11 @@ export const useUTMTracker = () => {
       'hashParams': Array.from(hashParams.entries()),
       'urlParams': Array.from(urlParams.entries())
     });
+    
+    // Логируем специально для отладки ref_campaign и ref_ad
+    console.log('🔍 [extractUTMFromURL] hashParams:', Array.from(hashParams.entries()));
+    console.log('🔍 [extractUTMFromURL] ref_campaign из hash:', hashParams.get('ref_campaign'));
+    console.log('🔍 [extractUTMFromURL] ref_ad из hash:', hashParams.get('ref_ad'));
 
     const allKeys = [...utmKeys, ...vkKeys, ...arbKeys];
 
@@ -135,6 +148,11 @@ export const useUTMTracker = () => {
     });
 
     logger.info('✅ Извлечённые UTM параметры:', utmData);
+    
+    // Логируем специально для отладки ref_campaign и ref_ad
+    console.log('✅ [extractUTMFromURL] Итоговые UTM параметры:', utmData);
+    console.log('✅ [extractUTMFromURL] ref_campaign в итоговых:', utmData.ref_campaign);
+    console.log('✅ [extractUTMFromURL] ref_ad в итоговых:', utmData.ref_ad);
 
     return utmData;
   }, []);
@@ -254,26 +272,107 @@ export const useUTMTracker = () => {
       return !['other', 'test', 'unknown', 'null', 'undefined', 'none'].includes(lowerValue);
     };
 
+    // Определяем значения по умолчанию для плейсхолдеров
+    // Только для utm_source используем значение по умолчанию 'vk_mini_app'
+    // Остальные параметры должны быть пустыми, чтобы удалялись из URL
+    const defaultValues = {
+      'utm_source': 'vk_mini_app',  // sub2 - всегда должен быть заполнен
+      'utm_medium': '',  // sub3 - удаляется, если значение не передано
+      'ref': '',
+      'ref_source': '',
+      'user_id': '',
+      'click_id': '',
+      'cid': '',
+    };
+
+    // Сначала декодируем URL, чтобы плейсхолдеры были в читаемом виде
+    try {
+      dynamicUrl = decodeURIComponent(dynamicUrl);
+    } catch (e) {
+      // Если декодирование не удалось, оставляем как есть
+    }
+    
+    // Логируем для отладки
+    logger.debug('🔍 [generateLinkWithUTM] Исходная ссылка:', dynamicUrl);
+    logger.debug('🔍 [generateLinkWithUTM] Параметры для замены:', allParams);
+
     // Заменяем все плейсхолдеры только если значение валидно
     Object.entries(allParams).forEach(([key, value]) => {
       const placeholder = `{${key}}`;
-      if (dynamicUrl.includes(placeholder)) {
+      // Ищем плейсхолдер в обычном виде и в URL-кодированном виде
+      const encodedPlaceholder = encodeURIComponent(placeholder);
+      
+      if (dynamicUrl.includes(placeholder) || dynamicUrl.includes(encodedPlaceholder)) {
         if (isValidValue(value)) {
-          // Заменяем плейсхолдер на валидное значение
+          // Заменяем плейсхолдер на валидное значение (и в обычном, и в кодированном виде)
+          const encodedValue = encodeURIComponent(value);
           dynamicUrl = dynamicUrl.replace(
             new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
-            encodeURIComponent(value)
+            encodedValue
+          );
+          dynamicUrl = dynamicUrl.replace(
+            new RegExp(encodedPlaceholder.replace(/[{}%]/g, '\\$&'), 'g'),
+            encodedValue
           );
         } else {
-          // Удаляем параметр с невалидным значением из URL
-          // Паттерн для удаления: &param={placeholder} или ?param={placeholder} или param={placeholder}&
-          const escapedPlaceholder = placeholder.replace(/[{}]/g, '\\$&');
-          dynamicUrl = dynamicUrl
-            .replace(new RegExp(`[&?]\\w+=${escapedPlaceholder}(?=&|$)`, 'g'), '')
-            .replace(new RegExp(`\\w+=${escapedPlaceholder}&`, 'g'), '');
+          // Если значение невалидное, используем значение по умолчанию
+          const defaultValue = defaultValues[key] || '';
+          if (defaultValue && isValidValue(defaultValue)) {
+            const encodedDefault = encodeURIComponent(defaultValue);
+            dynamicUrl = dynamicUrl.replace(
+              new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
+              encodedDefault
+            );
+            dynamicUrl = dynamicUrl.replace(
+              new RegExp(encodedPlaceholder.replace(/[{}%]/g, '\\$&'), 'g'),
+              encodedDefault
+            );
+          } else {
+            // Удаляем параметр с невалидным значением из URL
+            // Паттерн для удаления: &param={placeholder} или ?param={placeholder} или param={placeholder}&
+            const escapedPlaceholder = placeholder.replace(/[{}]/g, '\\$&');
+            const escapedEncodedPlaceholder = encodedPlaceholder.replace(/[{}%]/g, '\\$&');
+            dynamicUrl = dynamicUrl
+              .replace(new RegExp(`[&?]\\w+=${escapedPlaceholder}(?=&|$)`, 'g'), '')
+              .replace(new RegExp(`\\w+=${escapedPlaceholder}&`, 'g'), '')
+              .replace(new RegExp(`[&?]\\w+=${escapedEncodedPlaceholder}(?=&|$)`, 'g'), '')
+              .replace(new RegExp(`\\w+=${escapedEncodedPlaceholder}&`, 'g'), '');
+          }
         }
       }
     });
+    
+    // Удаляем все оставшиеся плейсхолдеры (которые не были заменены)
+    // Это важно, чтобы плейсхолдеры не оставались в URL
+    // Обрабатываем как обычные плейсхолдеры, так и URL-кодированные
+    dynamicUrl = dynamicUrl.replace(/\{[^}]+\}/g, (match) => {
+      // Извлекаем ключ из плейсхолдера
+      const key = match.slice(1, -1);
+      const defaultValue = defaultValues[key];
+      if (defaultValue && isValidValue(defaultValue)) {
+        return encodeURIComponent(defaultValue);
+      }
+      // Если нет значения по умолчанию, возвращаем пустую строку
+      // Параметр будет удален позже в процессе очистки
+      return '';
+    });
+    
+    // Также обрабатываем URL-кодированные плейсхолдеры
+    dynamicUrl = dynamicUrl.replace(/%7B([^%]+)%7D/g, (match, key) => {
+      const defaultValue = defaultValues[key];
+      if (defaultValue && isValidValue(defaultValue)) {
+        return encodeURIComponent(defaultValue);
+      }
+      return '';
+    });
+    
+    // Удаляем параметры, которые содержат пустые значения после замены плейсхолдеров
+    // Это нужно, чтобы удалить параметры вида sub2= или sub3=
+    dynamicUrl = dynamicUrl.replace(/[?&](\w+)=&/g, (match, paramName) => {
+      // Удаляем параметр с пустым значением
+      return match.includes('?') ? '?' : '&';
+    });
+    dynamicUrl = dynamicUrl.replace(/[?&](\w+)=$/g, '');
     
     // Очищаем лишние символы ? и & после удаления параметров
     dynamicUrl = dynamicUrl
@@ -297,6 +396,48 @@ export const useUTMTracker = () => {
       dynamicUrl = dynamicUrl.replace('&', '?');
     }
 
+    // Добавляем дополнительные параметры, которые не были подставлены через плейсхолдеры
+    // Это нужно для параметров типа ref_campaign, ref_ad и т.д.
+    const additionalParamsToAdd = ['ref_campaign', 'ref_ad', 'campaign_id', 'ad_id'];
+    
+    // Логируем для отладки
+    logger.debug('🔍 [generateLinkWithUTM] allParams перед добавлением дополнительных:', allParams);
+    console.log('🔍 [generateLinkWithUTM] allParams перед добавлением дополнительных:', allParams);
+    
+    try {
+      // Пытаемся создать URL объект (работает только для абсолютных URL)
+      const urlObj = new URL(dynamicUrl);
+      additionalParamsToAdd.forEach(param => {
+        const value = allParams[param];
+        logger.debug(`🔍 [generateLinkWithUTM] Проверяем параметр ${param}:`, { value, isValid: value && isValidValue(value), exists: urlObj.searchParams.has(param) });
+        if (value && isValidValue(value) && !urlObj.searchParams.has(param)) {
+          // Добавляем параметр только если его еще нет в URL
+          urlObj.searchParams.set(param, value);
+          logger.debug(`✅ [generateLinkWithUTM] Добавлен параметр ${param}=${value}`);
+        }
+      });
+      dynamicUrl = urlObj.toString();
+    } catch (e) {
+      // Если URL относительный или неполный, добавляем параметры вручную
+      logger.debug('⚠️ [generateLinkWithUTM] Не удалось создать URL объект, добавляем параметры вручную:', e);
+      additionalParamsToAdd.forEach(param => {
+        const value = allParams[param];
+        if (value && isValidValue(value)) {
+          // Проверяем, есть ли уже этот параметр в URL
+          const paramRegex = new RegExp(`[?&]${param}=[^&]*`);
+          if (!paramRegex.test(dynamicUrl)) {
+            // Добавляем параметр в конец URL
+            const separator = dynamicUrl.includes('?') ? '&' : '?';
+            dynamicUrl += `${separator}${param}=${encodeURIComponent(value)}`;
+            logger.debug(`✅ [generateLinkWithUTM] Добавлен параметр ${param}=${value} вручную`);
+          }
+        }
+      });
+    }
+
+    // Логируем финальную ссылку для отладки
+    logger.debug('✅ [generateLinkWithUTM] Финальная ссылка:', dynamicUrl);
+    
     return dynamicUrl;
   }, [utmParams]);
 
@@ -309,12 +450,14 @@ export const useUTMTracker = () => {
       try {
         console.log('🔴 [useUTMTracker] Инициализация UTM трекера...');
         console.log('🔴 [useUTMTracker] RAW window.location.href:', window.location.href);
+        console.log('🔴 [useUTMTracker] RAW window.location.hash:', window.location.hash);
         logger.debug('🔴 RAW window.location.href at start of useEffect:', window.location.href);
+        logger.debug('🔴 RAW window.location.hash at start of useEffect:', window.location.hash);
         setIsLoading(true);
         setError(null);
         setIsUserDataReady(false);
 
-        // Извлекаем UTM из URL (синхронно, быстро)
+        // Извлекаем UTM из URL (синхронно, быстро) - ДО того, как HashRouter изменит hash
         const urlUTM = extractUTMFromURL();
         console.log('🔍 [useUTMTracker] Параметры из URL:', urlUTM);
         logger.info('🔍 Параметры из URL:', urlUTM);

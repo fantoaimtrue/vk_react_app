@@ -6,6 +6,15 @@ import App from './app.jsx';
 console.log('--- main.jsx START ---');
 window._ = _;
 
+// Сохраняем оригинальный hash ДО того, как React начнет рендерить компоненты
+// Это нужно, чтобы сохранить параметры из hash, которые могут быть потеряны при нормализации HashRouter
+const originalHash = window.location.hash;
+if (originalHash && originalHash !== '#' && originalHash !== '#/') {
+  // Сохраняем оригинальный hash в sessionStorage для извлечения параметров
+  sessionStorage.setItem('originalHash', originalHash);
+  console.log('💾 [main.jsx] Сохранен оригинальный hash:', originalHash);
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <App />

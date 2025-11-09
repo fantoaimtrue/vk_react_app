@@ -200,8 +200,9 @@ class Offer(models.Model):
 
 class MFO(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
+    inn = models.CharField(max_length=12, unique=True, db_index=True, blank=True, null=True, verbose_name="ИНН")
     logo_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="URL логотипа")
-    link = models.URLField(max_length=200, verbose_name="Ссылка на оффер")
+    link = models.URLField(max_length=500, verbose_name="Ссылка на оффер") # Увеличил длину
     sum_min = models.IntegerField(verbose_name="Мин. сумма")
     sum_max = models.IntegerField(verbose_name="Макс. сумма")
     term_min = models.IntegerField(verbose_name="Мин. срок (дни)")

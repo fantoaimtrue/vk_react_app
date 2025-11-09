@@ -18,8 +18,54 @@ from django.db.models import Count
 import logging
 import requests
 import re
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
+
+
+def prepare_offer_link(original_link):
+    """
+    Добавляет плейсхолдеры для UTM-меток в URL оффера.
+    """
+    try:
+        parsed_url = urlparse(original_link)
+        query_params = parse_qs(parsed_url.query)
+
+        # Определяем маппинг sub-параметров на плейсхолдеры
+        # sub1 и sub9 остаются статическими, как идентификаторы
+        param_mapping = {
+            'sub2': '{utm_source}',
+            'sub3': '{utm_medium}',
+            'sub4': '{ref_campaign}',  # ref_campaign для отслеживания кампании
+            'sub5': '{ref_ad}',  # ref_ad для отслеживания рекламного объявления
+            'sub6': '{user_id}',  # или utm_term
+            'sub7': '{click_id}',
+            'sub10': '{cid}',
+        }
+
+        for param, placeholder in param_mapping.items():
+            # Заменяем значение, только если параметр уже существует
+            if param in query_params:
+                query_params[param] = placeholder
+
+        # Собираем URL обратно
+        new_query_string = urlencode(query_params, doseq=True)
+        new_url = urlunparse((
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            new_query_string,
+            parsed_url.fragment
+        ))
+        return new_url
+    except Exception:
+        # В случае ошибки возвращаем оригинальную ссылку, чтобы не сломать приложение
+        logger.exception(f"Ошибка при обработке ссылки: {original_link}")
+        return original_link
 
 
 # =============================================================================
@@ -64,78 +110,93 @@ class MFOSerializer(serializers.ModelSerializer):
 def mfo_list(request):
     """
     Получение списка МФО из внешнего API itfinance.online
+    с синхронизацией локальной базы данных.
     """
     try:
         # URL внешнего API
         api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list-suc"
         
-        # Пробрасываем важные заголовки от пользователя
         headers = {
-            'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'),
+            'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
             'Referer': request.headers.get('Referer', 'https://vk.com/'),
         }
 
-        logger.info(f"Запрашиваем данные из {api_url} с заголовками: {headers}")
-
-        # Выполняем запрос
+        logger.info(f"Запрашиваем данные из {api_url}")
         response = requests.get(api_url, timeout=10, headers=headers)
-
-        logger.info(f"Ответ от itfinance.online: status_code={response.status_code}")
-        
-        # Логируем часть контента для отладки, если есть проблемы
-        if response.status_code != 200:
-             logger.warning(f"Контент ответа itfinance.online: {response.text[:500]}")
-        
-        response.raise_for_status()  # Вызовет исключение для кодов 4xx/5xx
-        
+        response.raise_for_status()
         data = response.json()
-        
         logger.info(f"Получено {len(data.get('items', []))} офферов от itfinance.online")
 
         transformed_mfos = []
         for item in data.get('items', []):
-            offer = item.get('offer', {})
-            if not offer:
+            offer_data = item.get('offer', {})
+            if not offer_data or not offer_data.get('inn'):
                 continue
 
-            # --- Извлечение approval_chance ---
-            approval_chance = 80  # Default value
+            mfo_instance = None
+            final_link = item.get('link') # Fallback link
+
+            # --- Извлекаем данные ПЕРЕД синхронизацией (чтобы они были доступны даже при ошибке) ---
             label_text = item.get('label_text', '')
             match = re.search(r'(\d+)%', label_text)
-            if match:
-                approval_chance = int(match.group(1))
-            else:
-                # Fallback based on order if no percentage found
-                order = item.get('order', 5)
-                approval_chance = max(100 - order * 5, 75)
+            approval_chance = int(match.group(1)) if match else max(100 - item.get('order', 5) * 5, 75)
+            payout_speed_hours = 0.5 if 'моментально' in label_text.lower() else 24
 
-            # --- Извлечение payout_speed_hours ---
-            payout_speed_hours = 24 # Default value
-            if 'моментально' in label_text.lower():
-                payout_speed_hours = 0.5
-            elif 'в 2 клика' in label_text.lower():
-                 payout_speed_hours = 1.0
-            else:
-                order = item.get('order', 5)
-                payout_speed_hours = max(24 - order * 2, 1)
+            try:
+                with transaction.atomic():
 
-            transformed_mfos.append({
-                'id': offer.get('inn') or item.get('order'), # Use INN or order as ID
-                'name': offer.get('product_name'),
-                'logo_url': offer.get('image_link'),
-                'link': item.get('link'),
-                'sum_min': int(float(offer.get('amount_min', 0))),
-                'sum_max': int(float(offer.get('amount_max', 0))),
-                'term_min': offer.get('loan_term_from'),
-                'term_max': offer.get('loan_term_to'),
-                'rate': float(offer.get('daily_percentage_min', 0.8)),
+                    # --- Атомарная синхронизация ---
+                    mfo_instance, created = MFO.objects.get_or_create(
+                        inn=offer_data.get('inn'),
+                        defaults={
+                            'name': offer_data.get('product_name'),
+                            'link': item.get('link'), # Ссылка из API по умолчанию
+                            'approval_chance': approval_chance,
+                            'payout_speed_hours': payout_speed_hours,
+                            'logo_url': offer_data.get('image_link'),
+                            'sum_min': int(float(offer_data.get('amount_min', 0))),
+                            'sum_max': int(float(offer_data.get('amount_max', 0))),
+                            'term_min': offer_data.get('loan_term_from'),
+                            'term_max': offer_data.get('loan_term_to'),
+                            'rate': float(offer_data.get('daily_percentage_min', 0.8)),
+                        }
+                    )
+
+                    if not created:
+                        # Если объект уже существовал, обновляем его
+                        mfo_instance.name = offer_data.get('product_name')
+                        mfo_instance.logo_url = offer_data.get('image_link')
+                        # ... (обновляем другие поля, но НЕ ссылку)
+                        mfo_instance.sum_min = int(float(offer_data.get('amount_min', 0)))
+                        mfo_instance.sum_max = int(float(offer_data.get('amount_max', 0)))
+                        mfo_instance.save()
+                    
+                    final_link = mfo_instance.link # Используем ссылку из базы (новую или старую)
+
+            except Exception as sync_error:
+                logger.error(f"Ошибка синхронизации для {offer_data.get('product_name')}: {sync_error}")
+            
+            # --- Подготовка ссылки и финального объекта ---
+            prepared_link = prepare_offer_link(final_link)
+
+            response_item = {
+                'id': mfo_instance.id if mfo_instance else offer_data.get('inn'),
+                'name': offer_data.get('product_name'),
+                'logo_url': offer_data.get('image_link'),
+                'link': prepared_link,
+                'sum_min': int(float(offer_data.get('amount_min', 0))),
+                'sum_max': int(float(offer_data.get('amount_max', 0))),
+                'term_min': offer_data.get('loan_term_from'),
+                'term_max': offer_data.get('loan_term_to'),
+                'rate': float(offer_data.get('daily_percentage_min', 0.8)),
                 'approval_chance': approval_chance,
                 'payout_speed_hours': payout_speed_hours,
-                'promo_text': label_text, # Дополнительное поле для фронтенда
-                'requirements': [], # Отсутствует в API
-                'get_methods': [], # Отсутствует в API
-                'repay_methods': [], # Отсутствует в API
-            })
+                'promo_text': label_text,
+                'requirements': [],
+                'get_methods': [],
+                'repay_methods': [],
+            }
+            transformed_mfos.append(response_item)
             
         return Response(transformed_mfos)
 
@@ -143,7 +204,7 @@ def mfo_list(request):
         logger.error(f"Ошибка при запросе к API itfinance.online: {e}")
         return Response({'error': 'Не удалось получить данные от партнера'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     except Exception as e:
-        logger.exception("Непредвиденная ошибка в mfo_list при работе с внешним API")
+        logger.exception("Непредвиденная ошибка в mfo_list")
         return Response({'error': 'Внутренняя ошибка сервера'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -162,6 +223,7 @@ def mfo_detail(request, pk):
         return Response({'error': 'MFO not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @ratelimit(key='ip', rate='100/h', method='POST')
@@ -205,6 +267,49 @@ def utm_track(request):
             # Тип события
             event_type=data.get('event_type', 'page_view')
         )
+        
+        # Если это клик на МФО, отправляем данные в leads.tech
+        if data.get('event_type') == 'mfo_click' and data.get('mfo_data'):
+            mfo_data = data.get('mfo_data', {})
+            offer_link = mfo_data.get('link')
+            
+            if offer_link:
+                try:
+                    # Получаем User-Agent и Referer из запроса
+                    user_agent = request.META.get('HTTP_USER_AGENT', '')
+                    referer = request.META.get('HTTP_REFERER', '')
+                    
+                    logger.info(f"🔗 [Leads.Tech] Отправляем клик в leads.tech: {offer_link}")
+                    
+                    # Отправляем GET-запрос на ссылку оффера для регистрации клика в leads.tech
+                    # Используем реалистичный User-Agent браузера для лучшей совместимости
+                    browser_user_agent = user_agent or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    
+                    leads_tech_response = requests.get(
+                        offer_link,
+                        timeout=10,
+                        headers={
+                            'User-Agent': browser_user_agent,
+                            'Referer': referer or 'https://vk.com',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'Connection': 'keep-alive',
+                            'Upgrade-Insecure-Requests': '1',
+                        },
+                        allow_redirects=True,
+                        verify=True  # Проверяем SSL сертификаты
+                    )
+                    
+                    if leads_tech_response.status_code in [200, 301, 302]:
+                        logger.info(f"✅ [Leads.Tech] Клик успешно отправлен в leads.tech: {leads_tech_response.status_code}")
+                    else:
+                        logger.warning(f"⚠️ [Leads.Tech] Неожиданный статус код: {leads_tech_response.status_code}")
+                        
+                except requests.exceptions.RequestException as leads_error:
+                    logger.error(f"❌ [Leads.Tech] Ошибка при отправке клика в leads.tech: {leads_error}")
+                except Exception as leads_error:
+                    logger.exception(f"❌ [Leads.Tech] Непредвиденная ошибка при отправке клика: {leads_error}")
         
         return Response({
             'success': True,

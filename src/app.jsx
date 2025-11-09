@@ -1,6 +1,6 @@
 import vkBridge from '@vkontakte/vk-bridge';
 import React, { useEffect, useState } from 'react';
-import { Link, Route, HashRouter as Router, Routes } from 'react-router-dom';
+import { Link, Route, HashRouter as Router, Routes, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import NotificationSubscriptionModal from './components/NotificationSubscriptionModal';
 import useArbitrageTracker from './hooks/useArbitrageTracker';
@@ -50,18 +50,23 @@ function App() {
     }
   }, [userData, utmParams, autoSendOnUTMChange]);
 
-  // ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Показываем загрузчик, пока UTM трекер не завершит работу
-  if (utmLoading) {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#2c2c2e' }}>
-            <div className="loading-spinner"></div>
-        </div>
-    );
-  }
-  
+  // НЕ блокируем рендер приложения - офферы должны загружаться параллельно с UTM параметрами
+  // UTM параметры не критичны для отображения офферов
   console.log('--- App Component Before Return ---');
+  
+  // Сохраняем оригинальный hash ДО того, как HashRouter его изменит
+  useEffect(() => {
+    const originalHash = window.location.hash;
+    if (originalHash && originalHash !== '#' && originalHash !== '#/') {
+      // Сохраняем оригинальный hash в sessionStorage для извлечения параметров
+      sessionStorage.setItem('originalHash', originalHash);
+      console.log('💾 [App] Сохранен оригинальный hash:', originalHash);
+    }
+  }, []);
+  
   return (
     <Router>
+      <HashRouterFix />
       <div className="app-container">
         {/* Модальное окно подписки на уведомления */}
         {showModal && (
@@ -166,6 +171,26 @@ function App() {
       </div>
     </Router>
   );
+}
+
+// Компонент для исправления hash для HashRouter
+function HashRouterFix() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  useEffect(() => {
+    // НЕ нормализуем hash сразу - это может помешать извлечению параметров
+    // Вместо этого просто убеждаемся, что мы на главной странице
+    if (location.pathname !== '/') {
+      navigate('/', { replace: true });
+    }
+  }, [navigate, location]);
+  
+  // НЕ нормализуем hash - пусть useUTMTracker извлекает параметры из оригинального hash
+  // HashRouter должен работать с hash как есть, даже если он содержит только параметры
+  // Если hash содержит параметры без /, HashRouter все равно должен распознать маршрут "/"
+  
+  return null;
 }
 
 export default App;

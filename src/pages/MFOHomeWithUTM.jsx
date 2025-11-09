@@ -13,6 +13,9 @@ const INITIAL_ITEMS_TO_SHOW = 9;
 const ITEMS_PER_LOAD = 9;
 
 const MFOHomeWithUTM = () => {
+    console.log('🔴 [MFOHomeWithUTM] Компонент рендерится');
+    logger.info('🔴 [MFOHomeWithUTM] Компонент рендерится');
+    
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [amount, setAmount] = useState(15000);
     const [term, setTerm] = useState(15);
@@ -69,15 +72,23 @@ const MFOHomeWithUTM = () => {
         };
         const additionalParams = {
             ref: filterValue(getUTMParam('utm_campaign') || getUTMParam('vk_ref') || getUTMParam('ref') || getUTMParam('vk_ad_id') || getUTMParam('ad_id') || ''),
+            ref_campaign: filterValue(getUTMParam('ref_campaign') || getUTMParam('campaign_id') || ''),
+            ref_ad: filterValue(getUTMParam('ref_ad') || getUTMParam('ad_id') || getUTMParam('vk_ad_id') || ''),
             sub6: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || ''),
             ref_source: filterValue(getUTMParam('utm_source') || getUTMParam('vk_ref_source') || getUTMParam('ref_source') || ''),
             user_id: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || ''),
-            utm_source: filterValue(getUTMParam('utm_source') || ''),
+            // Если utm_source не определен, используем 'vk_mini_app' по умолчанию
+            utm_source: filterValue(getUTMParam('utm_source') || 'vk_mini_app'),
             utm_medium: filterValue(getUTMParam('utm_medium') || ''),
-            utm_campaign: filterValue(getUTMParam('utm_campaign') || ''),
+            utm_campaign: filterValue(getUTMParam('utm_campaign') || getUTMParam('ref_campaign') || ''),
             utm_content: filterValue(getUTMParam('utm_content') || ''),
             utm_term: filterValue(getUTMParam('utm_term') || '')
         };
+        
+        // Логируем для отладки
+        logger.debug('🔍 [generateMFOLink] additionalParams:', additionalParams);
+        console.log('🔍 [generateMFOLink] additionalParams:', additionalParams);
+        
         return generateLinkWithUTM(mfo.link, additionalParams);
     }, [generateLinkWithUTM, getUTMParam, userData]);
 
