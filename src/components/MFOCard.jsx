@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useMFODynamicLink } from '../hooks/useDynamicLinks';
 import './MFOCard.css';
 
 const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
+  // Получаем динамическую ссылку для данного MFO
+  const { dynamicLink, isLoading: linkLoading } = useMFODynamicLink(mfo);
+
   const isEligible =
     requestedAmount >= mfo.sum_min &&
     requestedAmount <= mfo.sum_max &&
@@ -46,12 +50,13 @@ const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
       <div className="mfo-card-footer">
         {isEligible && (
           <a
-            href={mfo.link}
+            href={dynamicLink || mfo.link}
             target="_blank"
             rel="noopener noreferrer"
             className="details-link"
+            style={{ opacity: linkLoading ? 0.7 : 1 }}
           >
-            Оформить
+            {linkLoading ? 'Загрузка...' : 'Оформить'}
           </a>
         )}
         <Link

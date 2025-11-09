@@ -37,21 +37,74 @@
     border: 2px solid #ED713C;
 }
 
-.filter-panel {
+.loan-calculator-section {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 30px; /* Увеличиваем отступ */
+    margin-bottom: 30px;
     animation: fade-in 0.4s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.filter-panel-title {
+.loan-calculator-title {
   text-align: center;
   margin-top: 0;
   margin-bottom: 25px;
   color: #fff;
   font-weight: 500;
+}
+
+.offer-button {
+  background-color: #ED713C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 30px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.offer-button:hover {
+  background-color: #fff;
+  color: #ED713C;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(237, 113, 60, 0.4);
+}
+
+.offer-button:active {
+  transform: translateY(0);
+}
+
+.help-wizard-button {
+  background: #ED713C;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(237, 113, 60, 0.3);
+}
+
+.help-wizard-button:hover {
+  background: #fff;
+  color: #ED713C;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(237, 113, 60, 0.5);
+}
+
+.help-wizard-button:active {
+  transform: translateY(0);
 }
 
 .partners-info {
@@ -65,6 +118,121 @@
   font-style: italic;
 }
 
+.knowledge-base-section {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 30px 0;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fade-in 0.4s ease;
+}
+
+.knowledge-base-section h3 {
+  color: #fff;
+  font-weight: 500;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.knowledge-base-section p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.kb-link-button {
+  display: inline-block;
+  background-color: #ED713C;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.kb-link-button:hover {
+  background-color: #fff;
+  color: #ED713C;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(237, 113, 60, 0.3);
+}
+
+.bot-promo-section {
+  background: linear-gradient(135deg, #0077FF 0%, #0056CC 100%);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 30px 0;
+  text-align: center;
+  border: 1px solid rgba(0, 119, 255, 0.3);
+  animation: fade-in 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.bot-promo-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(30deg); }
+  50% { transform: translateX(100%) translateY(100%) rotate(30deg); }
+}
+
+.bot-promo-section h3 {
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+  position: relative;
+  z-index: 1;
+}
+
+.bot-promo-section p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  font-size: 1em;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+.bot-promo-button {
+  display: inline-block;
+  background-color: #fff;
+  color: #0077FF;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.bot-promo-button:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #0056CC;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+
 @keyframes fade-in {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -77,15 +245,92 @@
 
 .mfo-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  min-height: 300px; /* Добавим минимальную высоту для корректного отображения спиннера */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  min-height: 300px;
   position: relative;
+  margin-top: 20px;
 }
 
-@media (max-width: 600px) {
+.wizard-section {
+  margin-bottom: 30px;
+}
+
+.results-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
   .mfo-list {
-    grid-template-columns: 1fr; /* Одна колонка на мобильных */
+    grid-template-columns: 1fr;
     gap: 20px;
+  }
+  
+  .loan-calculator-section {
+    padding: 15px;
+  }
+  
+  .loan-calculator-title {
+    font-size: 1em;
+  }
+  
+  .help-wizard-button {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+  
+  .offer-button {
+    font-size: 1em;
+    padding: 12px 24px;
+    max-width: 100%;
+  }
+  
+  .bot-promo-section,
+  .knowledge-base-section {
+    padding: 20px 15px;
+  }
+  
+  .bot-promo-section h3,
+  .knowledge-base-section h3 {
+    font-size: 1em;
+  }
+  
+  .bot-promo-section p,
+  .knowledge-base-section p {
+    font-size: 0.85em;
+  }
+}
+
+@media (max-width: 480px) {
+  .loan-calculator-section {
+    padding: 12px;
+    margin-bottom: 20px !important;
+  }
+  
+  .loan-calculator-title {
+    font-size: 0.9em;
+  }
+  
+  .help-wizard-button {
+    padding: 10px 14px;
+    font-size: 0.85em;
+  }
+  
+  .offer-button {
+    font-size: 0.95em;
+    padding: 12px 20px;
+  }
+  
+  .mfo-list {
+    gap: 15px;
+    margin-top: 20px !important;
   }
 } 

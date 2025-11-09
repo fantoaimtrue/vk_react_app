@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+    env_file:
+      - .env  # Загружаем переменные из .env файла (НЕ КОММИТИТЬ В GIT!)
+    restart: unless-stopped
+
+  frontend:
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped

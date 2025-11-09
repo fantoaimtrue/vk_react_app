@@ -1,0 +1,315 @@
+/* Компоненты UI в стиле Сбербанка */
+
+/* Кнопки */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-small);
+  outline: none;
+}
+
+.btn:focus {
+  box-shadow: var(--shadow-medium), 0 0 0 3px rgba(161, 217, 0, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Размеры кнопок */
+.btn-sm {
+  padding: 8px 16px;
+  font-size: var(--font-size-sm);
+  border-radius: 8px;
+}
+
+.btn-lg {
+  padding: 16px 32px;
+  font-size: var(--font-size-lg);
+  border-radius: 14px;
+}
+
+.btn-xl {
+  padding: 20px 40px;
+  font-size: var(--font-size-xl);
+  border-radius: 16px;
+}
+
+/* Варианты кнопок */
+.btn-primary {
+  background: var(--sber-main-gradient);
+  color: var(--text-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(90deg, #21A038 0%, #A1D900 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium), 0 0 20px rgba(33, 160, 56, 0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--secondary-color);
+  border: 2px solid var(--secondary-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--secondary-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-accent {
+  background: var(--accent-color);
+  color: var(--sber-dark-gray);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: #8BC34A;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium), 0 0 15px rgba(161, 217, 0, 0.4);
+}
+
+.btn-warning {
+  background: var(--warning-color);
+  color: var(--text-primary);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: #DC5A2A;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium), 0 0 15px rgba(237, 113, 60, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-primary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--hover-overlay);
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
+}
+
+/* Карточки */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-small);
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium), var(--shadow-colored);
+  border-color: var(--border-accent);
+}
+
+.card-header {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.card-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.card-subtitle {
+  margin: 8px 0 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.card-body {
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+}
+
+.card-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-primary);
+}
+
+/* Поля ввода */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+}
+
+.input::placeholder {
+  color: var(--text-disabled);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 3px rgba(33, 160, 56, 0.1);
+}
+
+.input:invalid {
+  border-color: var(--warning-color);
+}
+
+/* Лейблы */
+.label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* Модальные окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.modal {
+  background: var(--bg-modal);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-large), var(--shadow-colored);
+  backdrop-filter: blur(20px);
+  animation: slideIn var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Бейджи */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.badge-primary {
+  background: rgba(0, 120, 85, 0.2);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.badge-secondary {
+  background: rgba(33, 160, 56, 0.2);
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+}
+
+.badge-accent {
+  background: rgba(161, 217, 0, 0.2);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+}
+
+.badge-warning {
+  background: rgba(237, 113, 60, 0.2);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+}
+
+/* Утилиты */
+.glass-effect {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.glow-effect {
+  box-shadow: 0 0 20px rgba(33, 160, 56, 0.3);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  transition: transform var(--transition-fast);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .btn {
+    padding: 14px 20px;
+  }
+  
+  .btn-lg {
+    padding: 16px 28px;
+  }
+  
+  .btn-xl {
+    padding: 18px 32px;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .modal {
+    padding: 24px;
+    margin: 16px;
+  }
+}

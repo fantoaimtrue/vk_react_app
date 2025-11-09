@@ -79,10 +79,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# PostgreSQL configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'babkimanki_db'),
+        'USER': os.environ.get('DB_USER', 'babkimanki_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'change_this_password'),
+        'HOST': os.environ.get('DB_HOST', 'db'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -140,3 +145,25 @@ CSRF_TRUSTED_ORIGINS = [
     'https://bodyexp.ru',
     'https://www.bodyexp.ru',
 ]
+
+# VK Mini App Settings
+VK_APP_ACCESS_TOKEN = os.environ.get('VK_APP_ACCESS_TOKEN', '')
+VK_APP_ID = os.environ.get('VK_APP_ID', '')
+
+# Sentry Configuration for Error Monitoring
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+if SENTRY_DSN and not DEBUG:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=0.1,  # 10% в продакшене для экономии
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True,
+        environment='production' if not DEBUG else 'development',
+    )

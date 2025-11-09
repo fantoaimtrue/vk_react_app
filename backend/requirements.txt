@@ -5,3 +5,10 @@ djangorestframework==3.16.0
 sqlparse==0.5.3
 tzdata==2025.2
 gunicorn
+openpyxl==3.1.2
+pandas==2.2.2
+requests==2.31.0
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
+django-ratelimit==4.1.0
+sentry-sdk==2.19.2

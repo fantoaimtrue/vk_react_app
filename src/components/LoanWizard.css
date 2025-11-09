@@ -4,24 +4,25 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--bg-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
 }
 
 .wizard-modal {
-  background: #012017;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-modal);
+  border: 1px solid var(--border-primary);
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  border-radius: 16px;
+  box-shadow: var(--shadow-large), var(--shadow-colored);
   width: 90%;
   max-width: 700px;
   position: relative;
-  animation: slide-in 0.3s ease-out;
+  animation: slide-in var(--transition-normal) ease-out;
+  backdrop-filter: blur(20px);
 }
 
 @keyframes slide-in {
@@ -42,24 +43,37 @@
   background: transparent;
   border: none;
   font-size: 2.5em;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
+  transition: all var(--transition-fast);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .close-button:hover {
-  color: #fff;
+  color: var(--text-primary);
+  background: var(--hover-overlay);
+  transform: scale(1.1);
 }
 
 
 .wizard-step h2 {
   text-align: center;
   margin-top: 0;
-  color: #fff;
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
 }
 .wizard-step p {
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   margin-bottom: 25px;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
 }
 
 .wizard-options {
@@ -74,18 +88,20 @@
   grid-template-columns: auto 1fr;
   gap: 5px 15px;
   padding: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--border-primary);
+  border-radius: 12px;
+  background: var(--bg-card);
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
 }
 
 .wizard-option:hover {
-  border-color: #ED713C;
-  transform: translateY(-3px);
-  background-color: rgba(237, 113, 60, 0.1);
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(33, 160, 56, 0.1) 0%, rgba(161, 217, 0, 0.05) 100%);
+  box-shadow: var(--shadow-medium), 0 0 20px rgba(33, 160, 56, 0.2);
 }
 
 .wizard-option .icon {
@@ -95,14 +111,15 @@
 }
 .wizard-option .title {
   grid-area: title;
-  font-weight: bold;
-  font-size: 1.1em;
-  color: #fff;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
 }
 .wizard-option .description {
   grid-area: description;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9em;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
 }
 
 @media (max-width: 700px) {

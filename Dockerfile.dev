@@ -1,0 +1,13 @@
+# Этап 1: Сборка зависимостей
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+# Этап 2: Запуск в режиме разработки
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+EXPOSE 5174
+CMD ["npm", "run", "dev"]

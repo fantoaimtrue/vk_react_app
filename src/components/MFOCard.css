@@ -1,148 +1,372 @@
-/* Стили для отдельной карточки МФО */
+/* Супер привлекательная карточка МФО */
 .mfo-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
-  background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(15px);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .mfo-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(237, 113, 60, 0.5);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transform: translateY(-8px);
+  border-color: #ED713C;
+  box-shadow: 0 12px 40px rgba(237, 113, 60, 0.3),
+              0 0 0 1px rgba(237, 113, 60, 0.5);
 }
 
-/* Стили для неактивной карточки */
+/* Неактивная карточка */
 .mfo-card.ineligible {
-  opacity: 0.4;
-  background-color: rgba(0, 0, 0, 0.2);
+  opacity: 0.5;
+  background: rgba(0, 0, 0, 0.25);
 }
 .mfo-card.ineligible:hover {
   transform: none;
   box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
+
+/* Заголовок карточки */
 .mfo-card-header {
-  text-align: center;
-  padding: 15px;
+  display: flex;
+  align-items: center;
+  padding: 18px;
+  gap: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .mfo-logo {
-  width: 60px; /* Зададим фиксированную ширину */
-  height: 60px; /* и высоту для контейнера логотипа */
-  margin-right: 15px;
+  width: 70px;
+  height: 70px;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Скроем все, что выходит за пределы */
-  border-radius: 8px; /* Слегка скруглим углы */
-  background-color: #f0f0f0; /* Добавим фон для случаев, когда изображение не покрывает все пространство */
+  overflow: hidden;
+  border-radius: 12px;
+  background: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
-.mfo-logo span {
-  font-size: 30px; /* Увеличим иконку-заглушку */
-}
-
-.mfo-name {
-  margin: 0;
-  color: #fff;
-  font-size: 1.15em;
-}
-
-.mfo-card-body {
-  padding: 15px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.mfo-params-static p {
-  margin: 5px 0;
-  font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.mfo-calculation {
-  background-color: rgba(237, 113, 60, 0.15);
-  border: 1px solid #ED713C;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-}
-
-.mfo-calculation p {
-  margin: 5px 0;
-  font-size: 1.05em;
-}
-
-.mfo-calculation strong {
-  color: #ED713C;
-  font-size: 1.1em;
-}
-
-.mfo-card-footer {
-  padding: 15px;
-  margin-top: auto; /* Прижимает футер к низу */
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.details-link {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #ED713C;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
-  transition: all 0.2s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.details-link:hover {
-  background-color: #fff;
-  color: #ED713C;
-}
-
-.more-info-link {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: underline;
-  background: none;
-  border: none;
-  padding: 5px;
-  cursor: pointer;
-  transition: color 0.2s;
-  font-size: 0.9em;
-}
-
-.more-info-link:hover {
-  color: #fff;
-} 
 
 .mfo-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Масштабирует изображение, чтобы оно полностью покрыло контейнер, сохраняя пропорции. Может обрезать часть изображения. */
-  display: block;
+  object-fit: contain;
 }
 
-@media (max-width: 620px) {
+.mfo-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ED713C 0%, #FF8A50 100%);
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.mfo-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mfo-name {
+  margin: 0;
+  color: white;
+  font-size: 1.3em;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Шанс одобрения - выделенный */
+.mfo-approval-highlight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(0, 200, 83, 0.15) 0%, rgba(0, 230, 118, 0.15) 100%);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.approval-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85em;
+}
+
+.approval-percent {
+  color: #00E676;
+  font-weight: 700;
+  font-size: 1em;
+  text-shadow: 0 0 10px rgba(0, 230, 118, 0.5);
+}
+
+/* Тело карточки */
+.mfo-card-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Детали займа - компактно */
+.loan-details-compact {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+}
+
+.detail-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  color: white;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.detail-value.highlight-zero {
+  color: #00E676;
+  font-weight: 700;
+}
+
+.detail-value.highlight-fast {
+  color: #03A9F4;
+  font-weight: 700;
+}
+
+/* Расчет займа */
+.loan-calculation-box {
+  background: linear-gradient(135deg, rgba(237, 113, 60, 0.1) 0%, rgba(255, 138, 80, 0.1) 100%);
+  border: 1px solid rgba(237, 113, 60, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calculation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calc-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85em;
+}
+
+.calc-value {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.calculation-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 4px;
+}
+
+.total-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.total-value {
+  color: #ED713C;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+/* Новая привлекательная кнопка */
+.mfo-button-new {
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ED713C 0%, #FF8A50 100%);
+  color: white;
+  font-size: 1em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(237, 113, 60, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mfo-button-new:hover:not(.disabled) {
+  background: linear-gradient(135deg, #FF8A50 0%, #ED713C 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(237, 113, 60, 0.6);
+}
+
+.mfo-button-new:active:not(.disabled) {
+  transform: translateY(0);
+}
+
+.mfo-button-new.disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* UTM Debug */
+.utm-debug-info {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.5);
+  overflow-x: auto;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .mfo-card {
+    margin-bottom: 15px;
+  }
+  
+  .mfo-card-header {
+    padding: 15px;
+  }
+  
   .mfo-logo {
-    height: 40px;
-    font-size: 2em;
+    width: 60px;
+    height: 60px;
   }
+  
+  .mfo-name {
+    font-size: 1.15em;
+  }
+  
+  .mfo-approval-highlight {
+    padding: 5px 10px;
+  }
+  
+  .approval-text {
+    font-size: 0.8em;
+  }
+  
+  .approval-percent {
+    font-size: 0.95em;
+  }
+  
   .mfo-card-body {
-    padding: 10px;
+    padding: 15px;
   }
-} 
+  
+  .detail-item {
+    padding: 8px;
+  }
+  
+  .mfo-button-new {
+    padding: 12px 20px;
+    font-size: 0.95em;
+  }
+}
+
+@media (max-width: 480px) {
+  .mfo-card-header {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .mfo-logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 10px;
+  }
+  
+  .mfo-name {
+    font-size: 1.05em;
+  }
+  
+  .mfo-card-body {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .loan-details-compact {
+    gap: 10px;
+  }
+  
+  .detail-item {
+    padding: 8px 6px;
+  }
+  
+  .detail-label {
+    font-size: 0.7em;
+  }
+  
+  .detail-value {
+    font-size: 0.85em;
+  }
+  
+  .loan-calculation-box {
+    padding: 10px;
+    gap: 6px;
+  }
+  
+  .calc-label {
+    font-size: 0.8em;
+  }
+  
+  .calc-value {
+    font-size: 0.85em;
+  }
+  
+  .total-label {
+    font-size: 0.85em;
+  }
+  
+  .total-value {
+    font-size: 1em;
+  }
+  
+  .mfo-button-new {
+    padding: 12px 16px;
+    font-size: 0.9em;
+  }
+}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VK Mini App - Демо подписки на уведомления</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .demo-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .demo-description {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .demo-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .demo-btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .demo-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        .demo-btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+
+        .demo-btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: #d0d0d0;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🔔 VK Mini App</h1>
+        <p class="demo-title">Система подписки на уведомления</p>
+        
+        <p class="demo-description">
+            Демонстрация работы системы подписки на push-уведомления 
+            для VK Mini App с учетом мобильных устройств.
+        </p>
+
+        <div id="status-container">
+            <div class="status-indicator status-info">
+                ⏳ Инициализация...
+            </div>
+        </div>
+
+        <div class="demo-buttons">
+            <button class="demo-btn demo-btn-primary" onclick="initNotifications()">
+                🔔 Инициализировать систему уведомлений
+            </button>
+            
+            <button class="demo-btn demo-btn-secondary" onclick="checkStatus()">
+                📊 Проверить статус подписки
+            </button>
+            
+            <button class="demo-btn demo-btn-secondary" onclick="requestPermission()">
+                🔔 Запросить подписку
+            </button>
+            
+            <button class="demo-btn demo-btn-secondary" onclick="showTestToast()">
+                📱 Показать тестовое уведомление
+            </button>
+        </div>
+
+        <div class="code-block">
+            <strong>Быстрый старт:</strong><br>
+            <code>
+                // Импорт библиотеки<br>
+                import bridge from '@vkontakte/vk-bridge';<br><br>
+                
+                // Инициализация при загрузке<br>
+                document.addEventListener('DOMContentLoaded', () => {<br>
+                &nbsp;&nbsp;initVKNotifications();<br>
+                });
+            </code>
+        </div>
+    </div>
+
+    <!-- Подключаем VK Bridge (для демо используем мок) -->
+    <script>
+        // Мок VK Bridge для демонстрации
+        window.bridge = {
+            send: async (method, params = {}) => {
+                console.log(`🔔 VK Bridge: ${method}`, params);
+                
+                // Имитация задержки сети
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                switch (method) {
+                    case 'VKWebAppGetUserInfo':
+                        return {
+                            id: 123456789,
+                            first_name: 'Иван',
+                            last_name: 'Петров'
+                        };
+                    
+                    case 'VKWebAppCheckAllowedNotifications':
+                        // Случайно возвращаем разные результаты для демо
+                        return {
+                            result: Math.random() > 0.5
+                        };
+                    
+                    case 'VKWebAppAllowNotifications':
+                        // Имитируем пользовательский выбор
+                        const userChoice = confirm('Разрешить отправку уведомлений?');
+                        return {
+                            result: userChoice
+                        };
+                    
+                    default:
+                        throw new Error('Метод не поддерживается');
+                }
+            }
+        };
+    </script>
+
+    <!-- Подключаем нашу систему уведомлений -->
+    <script type="module">
+        // Импортируем функции (в реальном проекте используйте import)
+        const { initVKNotifications, requestNotificationPermission, showToast } = await import('./vk-notifications-simple.js');
+
+        // Делаем функции глобальными для демо
+        window.initNotifications = async () => {
+            updateStatus('⏳ Инициализация системы...', 'info');
+            try {
+                await initVKNotifications();
+                updateStatus('✅ Система инициализирована', 'success');
+            } catch (error) {
+                updateStatus('❌ Ошибка инициализации', 'error');
+            }
+        };
+
+        window.checkStatus = async () => {
+            updateStatus('🔍 Проверяем статус...', 'info');
+            try {
+                const result = await bridge.send('VKWebAppCheckAllowedNotifications');
+                if (result.result) {
+                    updateStatus('✅ Уведомления разрешены', 'success');
+                } else {
+                    updateStatus('❌ Уведомления запрещены', 'error');
+                }
+            } catch (error) {
+                updateStatus('⚠️ Не удалось проверить статус', 'error');
+            }
+        };
+
+        window.requestPermission = async () => {
+            updateStatus('🔔 Запрашиваем разрешение...', 'info');
+            try {
+                await requestNotificationPermission('Спасибо за подписку!', 'Вы можете подписаться позже');
+                updateStatus('✅ Запрос выполнен', 'success');
+            } catch (error) {
+                updateStatus('❌ Ошибка запроса', 'error');
+            }
+        };
+
+        window.showTestToast = () => {
+            showToast('Это тестовое уведомление!', 'success');
+        };
+
+        function updateStatus(message, type) {
+            const container = document.getElementById('status-container');
+            const colors = {
+                success: 'status-success',
+                error: 'status-error',
+                info: 'status-info'
+            };
+            
+            container.innerHTML = `<div class="status-indicator ${colors[type]}">${message}</div>`;
+        }
+
+        // Автоматическая инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('🚀 Демо готово к работе', 'info');
+        });
+    </script>
+</body>
+</html>
+
+
+

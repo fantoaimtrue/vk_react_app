@@ -1,33 +1,59 @@
+version: '3.8'
+
 services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-babkimanki_db}
+      POSTGRES_USER: ${DB_USER:-babkimanki_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_this_password}
+    ports:
+      - "5432:5432"  # Открываем порт для локального доступа
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - babkimanki_network
+    restart: unless-stopped
+
   backend:
-    build: ./backend
-    container_name: babkimanki-backend
-    command: sh -c "python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+    build: 
+      context: ./backend
+    expose:
+      - "8000"
+    env_file:
+      - .env
     volumes:
       - ./backend:/app
       - static_volume:/app/staticfiles
-    env_file:
-      - ./.env
+    depends_on:
+      - db
+    networks:
+      - babkimanki_network
 
   frontend:
-    build: .
-    container_name: babkimanki-frontend
-    ports:
-      - "80:80"
-      - "443:443" # Добавляем порт для HTTPS
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - static_volume:/app/static
-      - ./data/certbot/conf:/etc/letsencrypt # Папка с сертификатами
-      - ./data/certbot/www:/var/www/certbot # Папка для верификации
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     depends_on:
       - backend
-
+    networks:
+      - babkimanki_network
+  
   certbot:
     image: certbot/certbot
-    container_name: babkimanki-certbot
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@bodyexp.ru --agree-tos --no-eff-email --force-renewal -d bodyexp.ru -d www.bodyexp.ru
 
 volumes:
+  postgres_data:
   static_volume:
+
+networks:
+  babkimanki_network:
+    driver: bridge
