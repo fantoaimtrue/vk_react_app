@@ -114,7 +114,7 @@ def mfo_list(request):
     """
     try:
         # URL внешнего API
-        api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list-open"
+        api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list&utm_source=vk_mini_app"
         
         headers = {
             'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
@@ -168,7 +168,7 @@ def mfo_list(request):
                             'sum_max': int(float(offer_data.get('amount_max', 0))),
                             'term_min': offer_data.get('loan_term_from'),
                             'term_max': offer_data.get('loan_term_to'),
-                            'rate': float(offer_data.get('daily_percentage_min', 0.8)),
+                            'rate': 0.0,  # Всегда устанавливаем ставку 0%
                         }
                     )
 
@@ -180,7 +180,7 @@ def mfo_list(request):
                         mfo_instance.payout_speed_hours = payout_speed_hours  # Обновляем скорость выплаты
                         mfo_instance.term_min = offer_data.get('loan_term_from')
                         mfo_instance.term_max = offer_data.get('loan_term_to')
-                        mfo_instance.rate = float(offer_data.get('daily_percentage_min', 0.8))
+                        mfo_instance.rate = 0.0  # Всегда устанавливаем ставку 0%
                         # ... (обновляем другие поля, но НЕ ссылку)
                         mfo_instance.sum_min = int(float(offer_data.get('amount_min', 0)))
                         mfo_instance.sum_max = int(float(offer_data.get('amount_max', 0)))
@@ -203,7 +203,7 @@ def mfo_list(request):
                 'sum_max': int(float(offer_data.get('amount_max', 0))),
                 'term_min': offer_data.get('loan_term_from'),
                 'term_max': offer_data.get('loan_term_to'),
-                'rate': float(offer_data.get('daily_percentage_min', 0.8)),
+                'rate': 0.0,  # Всегда возвращаем ставку 0%
                 'approval_chance': approval_chance,
                 'payout_speed_hours': payout_speed_hours,
                 'promo_text': label_text,
@@ -283,48 +283,12 @@ def utm_track(request):
             event_type=data.get('event_type', 'page_view')
         )
         
-        # Если это клик на МФО, отправляем данные в leads.tech
+        # Клик регистрируется автоматически когда пользователь открывает ссылку через window.open()
+        # Не нужно делать дополнительный GET запрос - это создает дублирующий клик
+        # Только сохраняем информацию о клике в нашей БД для статистики
         if data.get('event_type') == 'mfo_click' and data.get('mfo_data'):
             mfo_data = data.get('mfo_data', {})
-            offer_link = mfo_data.get('link')
-            
-            if offer_link:
-                try:
-                    # Получаем User-Agent и Referer из запроса
-                    user_agent = request.META.get('HTTP_USER_AGENT', '')
-                    referer = request.META.get('HTTP_REFERER', '')
-                    
-                    logger.info(f"🔗 [Leads.Tech] Отправляем клик в leads.tech: {offer_link}")
-                    
-                    # Отправляем GET-запрос на ссылку оффера для регистрации клика в leads.tech
-                    # Используем реалистичный User-Agent браузера для лучшей совместимости
-                    browser_user_agent = user_agent or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                    
-                    leads_tech_response = requests.get(
-                        offer_link,
-                        timeout=10,
-                        headers={
-                            'User-Agent': browser_user_agent,
-                            'Referer': referer or 'https://vk.com',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-                            'Accept-Encoding': 'gzip, deflate, br',
-                            'Connection': 'keep-alive',
-                            'Upgrade-Insecure-Requests': '1',
-                        },
-                        allow_redirects=True,
-                        verify=True  # Проверяем SSL сертификаты
-                    )
-                    
-                    if leads_tech_response.status_code in [200, 301, 302]:
-                        logger.info(f"✅ [Leads.Tech] Клик успешно отправлен в leads.tech: {leads_tech_response.status_code}")
-                    else:
-                        logger.warning(f"⚠️ [Leads.Tech] Неожиданный статус код: {leads_tech_response.status_code}")
-                        
-                except requests.exceptions.RequestException as leads_error:
-                    logger.error(f"❌ [Leads.Tech] Ошибка при отправке клика в leads.tech: {leads_error}")
-                except Exception as leads_error:
-                    logger.exception(f"❌ [Leads.Tech] Непредвиденная ошибка при отправке клика: {leads_error}")
+            logger.info(f"📊 [UTM Track] Клик на МФО: {mfo_data.get('name')} (ID: {mfo_data.get('id')})")
         
         return Response({
             'success': True,
@@ -657,9 +621,14 @@ def user_allow_notifications(request):
     """
     try:
         vk_user_id = request.data.get('vk_user_id')
-        allowed = True
+        # Читаем параметр allowed из запроса, по умолчанию True для обратной совместимости
+        allowed = request.data.get('allowed', True)
         
-        logger.info(f"--- PUSH NOTIFICATION SUBSCRIBE ATTEMPT for user_id: {vk_user_id} ---")
+        # Преобразуем в boolean, если передано как строка
+        if isinstance(allowed, str):
+            allowed = allowed.lower() in ('true', '1', 'yes', 'on')
+        
+        logger.info(f"--- PUSH NOTIFICATION SUBSCRIBE ATTEMPT for user_id: {vk_user_id}, allowed: {allowed} ---")
 
         if not vk_user_id:
             logger.warning("[PUSH] vk_user_id is missing from request.")
@@ -671,13 +640,20 @@ def user_allow_notifications(request):
         # Находим пользователя
         try:
             user = VKUser.objects.get(vk_user_id=vk_user_id)
-            logger.info(f"[PUSH] User found: {user}. Current 'notifications_allowed' status: {user.notifications_allowed}")
+            old_status = user.notifications_allowed
+            logger.info(f"[PUSH] User found: {user}. Current 'notifications_allowed' status: {old_status}")
 
-            user.notifications_allowed = allowed
+            user.notifications_allowed = bool(allowed)
             user.save()
 
             updated_user = VKUser.objects.get(vk_user_id=vk_user_id)
             logger.info(f"[PUSH] 'notifications_allowed' status AFTER save: {updated_user.notifications_allowed}")
+            
+            # Логируем изменение статуса
+            if old_status != updated_user.notifications_allowed:
+                logger.info(f"[PUSH] ✅ Статус уведомлений изменен: {old_status} -> {updated_user.notifications_allowed}")
+            else:
+                logger.info(f"[PUSH] ℹ️ Статус уведомлений не изменился: {updated_user.notifications_allowed}")
             
             return Response({
                 'success': True,
@@ -693,7 +669,102 @@ def user_allow_notifications(request):
             }, status=status.HTTP_404_NOT_FOUND)
             
     except Exception as e:
-        logger.exception(f"[PUSH] An exception occurred in user_allow_notifications for user {vk_user_id}")
+        logger.exception(f"[PUSH] An exception occurred in user_allow_notifications for user {vk_user_id if 'vk_user_id' in locals() else 'unknown'}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@ratelimit(key='ip', rate='30/h', method='POST')
+def user_allow_messages(request):
+    """
+    Обновление статуса разрешения на отправку сообщений от имени сообщества
+    Если передан access_token, вызывается VK API метод messages.allowMessagesFromGroup
+    """
+    import requests
+    from django.conf import settings
+    
+    try:
+        vk_user_id = request.data.get('vk_user_id')
+        allowed = request.data.get('allowed', True)
+        access_token = request.data.get('access_token')  # Токен пользователя с правами messages
+        
+        logger.info(f"--- COMMUNITY MESSAGES PERMISSION ATTEMPT for user_id: {vk_user_id} ---")
+
+        if not vk_user_id:
+            logger.warning("[MESSAGES] vk_user_id is missing from request.")
+            return Response({
+                'success': False,
+                'error': 'vk_user_id обязателен'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Если передан access_token, вызываем VK API метод messages.allowMessagesFromGroup
+        if access_token and allowed:
+            try:
+                group_id = getattr(settings, 'VK_GROUP_ID', '230927358')
+                
+                logger.info(f"[MESSAGES] Вызываем VK API messages.allowMessagesFromGroup для пользователя {vk_user_id}")
+                
+                # Вызываем VK API метод messages.allowMessagesFromGroup
+                params = {
+                    'access_token': access_token,
+                    'group_id': group_id,
+                    'v': '5.131',
+                }
+                
+                response = requests.post(
+                    'https://api.vk.com/method/messages.allowMessagesFromGroup',
+                    params=params,
+                    timeout=10
+                )
+                
+                result = response.json()
+                logger.info(f"[MESSAGES] VK API response: {result}")
+                
+                if result.get('response') == 1:
+                    logger.info(f"[MESSAGES] ✅ Разрешение на сообщения от сообщества получено через VK API")
+                elif result.get('error'):
+                    error_code = result.get('error', {}).get('error_code')
+                    error_msg = result.get('error', {}).get('error_msg')
+                    logger.warning(f"[MESSAGES] ⚠️ VK API вернул ошибку: {error_code} - {error_msg}")
+                    # Продолжаем выполнение, даже если VK API вернул ошибку
+                    # (может быть, разрешение уже было предоставлено ранее)
+                else:
+                    logger.warning(f"[MESSAGES] ⚠️ Неожиданный ответ от VK API: {result}")
+                    
+            except Exception as api_error:
+                logger.error(f"[MESSAGES] ❌ Ошибка при вызове VK API: {api_error}")
+                # Продолжаем выполнение, даже если VK API вернул ошибку
+        
+        # Находим пользователя и обновляем статус в базе данных
+        try:
+            user = VKUser.objects.get(vk_user_id=vk_user_id)
+            logger.info(f"[MESSAGES] User found: {user}. Current 'messages_allowed' status: {user.messages_allowed}")
+
+            user.messages_allowed = allowed
+            user.save()
+
+            updated_user = VKUser.objects.get(vk_user_id=vk_user_id)
+            logger.info(f"[MESSAGES] 'messages_allowed' status AFTER save: {updated_user.messages_allowed}")
+            
+            return Response({
+                'success': True,
+                'message': f'Сообщения от сообщества {"разрешены" if allowed else "запрещены"}',
+                'messages_allowed': user.messages_allowed
+            })
+            
+        except VKUser.DoesNotExist:
+            logger.error(f"[MESSAGES] User with vk_user_id {vk_user_id} not found in database.")
+            return Response({
+                'success': False,
+                'error': 'Пользователь не найден'
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+    except Exception as e:
+        logger.exception(f"[MESSAGES] An exception occurred in user_allow_messages for user {vk_user_id}")
         return Response({
             'success': False,
             'error': str(e)
@@ -734,6 +805,7 @@ def user_status(request):
                     'last_name': user.last_name,
                     'notifications_enabled': user.notifications_enabled,
                     'notifications_allowed': user.notifications_allowed,
+                    'messages_allowed': user.messages_allowed,
                     'total_visits': user.total_visits,
                     'first_visit': user.first_visit.isoformat(),
                     'last_visit': user.last_visit.isoformat(),
@@ -868,9 +940,20 @@ def users_stats(request):
 def send_to_leads_tech(request):
     """
     Отправляет данные пользователя и UTM метки в систему арбитражника leads.tech
+    ВАЖНО: Теперь используется ТОЛЬКО для кликов по конкретным MFO с offer_id
     """
     try:
         data = request.data
+        
+        # НОВАЯ ЛОГИКА: Требуем обязательный offer_id
+        offer_id = data.get('offer_id')
+        if not offer_id:
+            logger.warning(f"❌ [Leads.Tech] Запрос БЕЗ offer_id отклонен. IP: {request.META.get('REMOTE_ADDR', '')}, User-Agent: {data.get('user_agent', '')[:100]}")
+            return Response({
+                'success': False,
+                'error': 'offer_id is required for leads.tech tracking',
+                'message': 'Этот endpoint теперь используется только для кликов по конкретным MFO'
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Получаем IP адрес пользователя
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -896,6 +979,14 @@ def send_to_leads_tech(request):
             'vk_ref': data.get('vk_ref', ''),
             'vk_ref_source': data.get('vk_ref_source', ''),
             'vk_platform': data.get('vk_platform', ''),
+            # Арбитражные параметры (важно для leads.tech)
+            'ref': data.get('ref', ''),
+            'ref_source': data.get('ref_source', ''),
+            'ref_campaign': data.get('ref_campaign', ''),
+            'ref_ad': data.get('ref_ad', ''),
+            'ad_id': data.get('ad_id', ''),
+            'banner_id': data.get('banner_id', ''),
+            'campaign_id': data.get('campaign_id', ''),
             'click_id': data.get('click_id', ''),
             'sub_id': data.get('sub_id', ''),
             's1': data.get('s1', ''),
@@ -914,47 +1005,75 @@ def send_to_leads_tech(request):
         }
         
         # Параметры для leads.tech (формат офферов)
-        # Поддерживаем стандартные VK параметры И старый формат для обратной совместимости
-        # Приоритет: campaign_id/banner_id (VK стандарт) → ref/ref_source (старый формат)
+        # ПРИОРИТЕТ для s4 (id кампании): ref → ref_campaign → campaign_id → utm_campaign
+        # ПРИОРИТЕТ для s5 (id объявления): banner_id → ref_ad → ad_id → vk_ad_id → ref_source → utm_content
+        # ПРИОРИТЕТ для s6 (user_id): user_id → userData.id → utm_term → vk_user_id
+        # В рассылке бота используются макросы: {ref}, {banner_id}, {user_id}
         leads_tech_params = {
             's4': (data.get('s4') or 
-                   data.get('campaign_id') or  # VK стандарт: {{campaign_id}}
+                   data.get('ref') or           # ID кампании из ref (макрос {ref} из рассылки)
+                   data.get('ref_campaign') or  # ID кампании из ref_campaign
+                   data.get('campaign_id') or   # VK стандарт: {{campaign_id}}
                    data.get('utm_campaign') or  # Стандартный UTM
-                   data.get('ref') or           # Старый формат
                    data.get('vk_ref') or ''),
             's5': (data.get('s5') or 
-                   data.get('banner_id') or     # VK стандарт: {{banner_id}}
-                   data.get('utm_content') or   # Стандартный UTM
+                   data.get('banner_id') or     # ID объявления из banner_id (макрос {banner_id} из рассылки) - ПРИОРИТЕТ!
+                   data.get('ref_ad') or        # ID объявления из ref_ad
+                   data.get('ad_id') or         # ID объявления из ad_id
+                   data.get('vk_ad_id') or      # ID объявления из vk_ad_id
                    data.get('ref_source') or    # Старый формат
+                   data.get('utm_content') or   # Стандартный UTM
                    data.get('vk_ref_source') or ''),
             's6': (data.get('s6') or 
-                   data.get('user_id') or       # Основной ID
+                   data.get('user_id') or       # ID пользователя из user_id (макрос {user_id} из рассылки) - ПРИОРИТЕТ!
                    data.get('utm_term') or      # VK может передать в utm_term
                    data.get('vk_user_id') or ''),
         }
         
         # Логируем все входящие данные для отладки
         logger.info(f"🔍 [Leads.Tech] Входящие данные: {data}")
+        logger.info(f"🔍 [Leads.Tech] offer_id из данных: {data.get('offer_id')}")
+        logger.info(f"🔍 [Leads.Tech] IP адрес: {ip_address}")
+        logger.info(f"🔍 [Leads.Tech] User-Agent: {data.get('user_agent', '')[:100]}")
+        logger.info(f"🔍 [Leads.Tech] URL источника: {data.get('url', '')}")
+        
+        # ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ UTM параметров
+        logger.info(f"🔍 [Leads.Tech] utm_campaign: {data.get('utm_campaign')}")
+        logger.info(f"🔍 [Leads.Tech] utm_content: {data.get('utm_content')}")
+        logger.info(f"🔍 [Leads.Tech] utm_term: {data.get('utm_term')}")
+        logger.info(f"🔍 [Leads.Tech] ref: {data.get('ref')} (макрос {{ref}} из рассылки)")
+        logger.info(f"🔍 [Leads.Tech] ref_campaign: {data.get('ref_campaign')}")
+        logger.info(f"🔍 [Leads.Tech] banner_id: {data.get('banner_id')} (макрос {{banner_id}} из рассылки)")
+        logger.info(f"🔍 [Leads.Tech] ref_ad: {data.get('ref_ad')}")
+        logger.info(f"🔍 [Leads.Tech] ad_id: {data.get('ad_id')}")
+        logger.info(f"🔍 [Leads.Tech] vk_ad_id: {data.get('vk_ad_id')}")
+        logger.info(f"🔍 [Leads.Tech] user_id: {data.get('user_id')} (макрос {{user_id}} из рассылки)")
+        logger.info(f"🔍 [Leads.Tech] s4 (до обработки): {data.get('s4')}")
+        logger.info(f"🔍 [Leads.Tech] s5 (до обработки): {data.get('s5')}")
+        logger.info(f"🔍 [Leads.Tech] s6 (до обработки): {data.get('s6')}")
         
         # Логируем параметры для отладки
-        logger.info(f"🔍 [Leads.Tech] Параметры: {leads_tech_params}")
+        logger.info(f"🔍 [Leads.Tech] Итоговые параметры для leads.tech: {leads_tech_params}")
+        logger.info(f"🔍 [Leads.Tech] s4 (id кампании): {leads_tech_params.get('s4')}")
+        logger.info(f"🔍 [Leads.Tech] s5 (id объявления): {leads_tech_params.get('s5')}")
+        logger.info(f"🔍 [Leads.Tech] s6 (user_id): {leads_tech_params.get('s6')}")
         
         # Реальная интеграция с leads.tech
         try:
             import requests
             
-            offer_id = data.get('offer_id')
-            leads_tech_url = "https://безотказа.бабкиманки.рф/Eg5hd"
-
-            if offer_id:
-                try:
-                    mfo = MFO.objects.get(id=offer_id)
-                    leads_tech_url = mfo.link
-                    logger.info(f"✅ [Leads.Tech] Используем прямую ссылку для MFO ID {offer_id}: {leads_tech_url}")
-                except MFO.DoesNotExist:
-                    logger.warning(f"⚠️ [Leads.Tech] MFO с ID {offer_id} не найдено. Используем fallback URL.")
-            else:
-                logger.warning("⚠️ [Leads.Tech] offer_id не предоставлен. Используем fallback URL.")
+            # offer_id уже проверен выше, получаем MFO из базы
+            try:
+                mfo = MFO.objects.get(id=offer_id)
+                leads_tech_url = mfo.link
+                logger.info(f"✅ [Leads.Tech] Используем ссылку для MFO ID {offer_id}: {leads_tech_url}")
+            except MFO.DoesNotExist:
+                logger.error(f"❌ [Leads.Tech] MFO с ID {offer_id} не найдено в базе данных!")
+                return Response({
+                    'success': False,
+                    'error': f'MFO with ID {offer_id} not found',
+                    'message': 'Указанное MFO не существует в базе данных'
+                }, status=status.HTTP_404_NOT_FOUND)
                 
             # ВАЖНО: Заменяем плейсхолдеры {ref}, {ref_source}, {user_id} на реальные значения
             # Это нужно, чтобы в URL не было дублирования параметров
@@ -972,20 +1091,34 @@ def send_to_leads_tech(request):
             leads_tech_url = re.sub(r'&&+', '&', leads_tech_url)  # && -> &
             leads_tech_url = re.sub(r'[?&]$', '', leads_tech_url)  # удаляем ? или & в конце
                 
-            # Если после замены плейсхолдеров нужно добавить дополнительные параметры
-            # (когда в leads_tech_params есть значения, но их нет в базовой ссылке)
-            params_to_add = []
-            for key, value in leads_tech_params.items():
-                if value and key not in leads_tech_url:
-                    params_to_add.append(f"{key}={str(value)}") # Приводим к строке
+            # ВАЖНО: Всегда добавляем параметры s4, s5, s6 в URL для leads.tech
+            # Удаляем старые значения этих параметров, если они есть
+            import urllib.parse
+            parsed_url = urllib.parse.urlparse(leads_tech_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
             
-            if params_to_add:
-                separator = "&" if "?" in leads_tech_url else "?"
-                leads_tech_url = leads_tech_url + separator + "&".join(params_to_add)
+            # Обновляем параметры s4, s5, s6 значениями из leads_tech_params
+            logger.info(f"🔍 [Leads.Tech] Параметры для добавления в URL: {leads_tech_params}")
+            for key, value in leads_tech_params.items():
+                if value:  # Только если значение не пустое
+                    query_params[key] = [str(value)]
+                    logger.info(f"🔍 [Leads.Tech] Добавляем параметр {key}={value} в URL")
+            
+            # Формируем новый URL с обновленными параметрами
+            new_query = urllib.parse.urlencode(query_params, doseq=True)
+            leads_tech_url = urllib.parse.urlunparse((
+                parsed_url.scheme,
+                parsed_url.netloc,
+                parsed_url.path,
+                parsed_url.params,
+                new_query,
+                parsed_url.fragment
+            ))
             
             leads_tech_params_url = leads_tech_url
             
-            logger.info(f"🔗 [Leads.Tech] Отправляем в leads.tech: {leads_tech_params_url}")
+            logger.info(f"🔗 [Leads.Tech] Итоговый URL для отправки в leads.tech: {leads_tech_params_url}")
+            logger.info(f"🔍 [Leads.Tech] Параметры в URL: s4={query_params.get('s4', [''])[0]}, s5={query_params.get('s5', [''])[0]}, s6={query_params.get('s6', [''])[0]}")
             
             leads_tech_response = requests.get(
                 leads_tech_params_url,
@@ -1042,3 +1175,58 @@ def send_to_leads_tech(request):
             'success': False,
             'error': 'Internal Server Error'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@ratelimit(key='ip', rate='100/h', method='POST')
+def track_session(request):
+    """
+    Optional endpoint for tracking VK Ads campaign sessions
+    Logs tracking data (ref, ref_source, utm_*, vk_user_id) for analytics
+    """
+    try:
+        data = request.data
+        
+        # Extract tracking parameters
+        vk_user_id = data.get('vk_user_id') or data.get('user_id')
+        ref = data.get('ref')
+        ref_source = data.get('ref_source')
+        utm_source = data.get('utm_source')
+        utm_medium = data.get('utm_medium')
+        utm_campaign = data.get('utm_campaign')
+        utm_content = data.get('utm_content')
+        utm_term = data.get('utm_term')
+        
+        # Log session in UTMTracking model
+        utm_tracking = UTMTracking.objects.create(
+            user_id=str(vk_user_id) if vk_user_id else '',
+            utm_source=utm_source or '',
+            utm_medium=utm_medium or '',
+            utm_campaign=utm_campaign or '',
+            utm_content=utm_content or '',
+            utm_term=utm_term or '',
+            vk_ref=ref or '',
+            vk_ref_source=ref_source or '',
+            url=request.META.get('HTTP_REFERER', ''),
+            referrer=request.META.get('HTTP_REFERER', ''),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            full_utm_data=data,
+            full_user_data={'vk_user_id': vk_user_id} if vk_user_id else {},
+            event_type='session_track'
+        )
+        
+        logger.info(f"✅ [Track Session] Session logged: user_id={vk_user_id}, ref={ref}, ref_source={ref_source}, tracking_id={utm_tracking.id}")
+        
+        return Response({
+            'status': 'success',
+            'message': 'Session tracked successfully',
+            'tracking_id': utm_tracking.id
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"❌ [Track Session] Error tracking session: {e}")
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
