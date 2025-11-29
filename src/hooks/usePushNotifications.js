@@ -166,30 +166,70 @@ export const usePushNotifications = (utmParams = {}) => {
 
     // Подписка на уведомления и активация промокода
     const handleSubscribe = async () => {
-        if (!user) return;
+        if (!user) {
+            logger.warning('⚠️ Пользователь не инициализирован');
+            return;
+        }
         
         setIsLoading(true);
         try {
+            logger.info('🔔 Запрашиваем разрешение на уведомления...');
             const result = await bridge.send('VKWebAppAllowNotifications');
-            if (result.result) {
+            
+            if (result && result.result === true) {
+                logger.info('✅ Пользователь разрешил уведомления');
+                
                 // Обновляем статус в базе
-                await fetch('/api/users/allow-notifications/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        vk_user_id: user.id, 
-                        allowed: true 
-                    }),
-                });
-                setPromoApplied(true); // Активируем промокод
+                try {
+                    const response = await fetch('/api/users/allow-notifications/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            vk_user_id: user.id, 
+                            allowed: true 
+                        }),
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        logger.info('✅ Статус обновлен в базе данных:', data);
+                        setPromoApplied(true); // Активируем промокод
+                        setShowModal(false);
+                        logger.info('🎁 Промокод ФРИ активирован!');
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        logger.error('❌ Ошибка обновления статуса в базе:', errorData);
+                        // Все равно закрываем модальное окно, так как разрешение получено
+                        setShowModal(false);
+                    }
+                } catch (fetchError) {
+                    logger.error('❌ Ошибка при обновлении статуса в базе:', fetchError);
+                    // Все равно закрываем модальное окно, так как разрешение получено
+                    setShowModal(false);
+                }
+            } else {
+                logger.info('❌ Пользователь отклонил запрос на уведомления');
+                // Обновляем статус в базе как false
+                try {
+                    await fetch('/api/users/allow-notifications/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            vk_user_id: user.id, 
+                            allowed: false 
+                        }),
+                    });
+                } catch (error) {
+                    logger.error('❌ Ошибка обновления статуса отказа:', error);
+                }
                 setShowModal(false);
-                logger.info('🎁 Промокод ФРИ активирован!');
             }
         } catch (error) {
-            logger.error('Ошибка подписки:', error);
+            logger.error('❌ Ошибка подписки:', error);
+            // Закрываем модальное окно даже при ошибке
+            setShowModal(false);
         } finally {
             setIsLoading(false);
-            setShowModal(false);
         }
     };
 

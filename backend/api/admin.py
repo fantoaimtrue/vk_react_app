@@ -4,7 +4,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import MFO, Offer, VKUser, PushNotification, PushLog
+from .models import MFO, Offer, VKUser, PushNotification, PushLog, PushCampaign, PushTemplate, SentPush
 
 # Убираем регистрацию Offer из админки
 # @admin.register(Offer)
@@ -58,8 +58,8 @@ class MFOAdmin(admin.ModelAdmin):
 
 @admin.register(VKUser)
 class VKUserAdmin(admin.ModelAdmin):
-    list_display = ('vk_user_id', 'full_name', 'city', 'sex_display', 'notifications_status', 'last_visit', 'total_visits', 'utm_source')
-    list_filter = ('notifications_enabled', 'notifications_allowed', 'sex', 'city', 'utm_source', 'first_visit', 'last_visit')
+    list_display = ('vk_user_id', 'full_name', 'city', 'sex_display', 'notifications_status', 'messages_status', 'last_visit', 'total_visits', 'utm_source')
+    list_filter = ('notifications_enabled', 'notifications_allowed', 'messages_allowed', 'sex', 'city', 'utm_source', 'first_visit', 'last_visit')
     search_fields = ('vk_user_id', 'first_name', 'last_name', 'city', 'utm_source', 'utm_campaign')
     readonly_fields = ('vk_user_id', 'first_visit', 'total_visits', 'extra_data_display')
     ordering = ['-last_visit']
@@ -75,6 +75,10 @@ class VKUserAdmin(admin.ModelAdmin):
         ('Настройки уведомлений', {
             'fields': ('notifications_enabled', 'notifications_allowed'),
             'description': 'Управление возможностью отправки уведомлений пользователю'
+        }),
+        ('Настройки сообщений', {
+            'fields': ('messages_allowed',),
+            'description': 'Разрешение на отправку сообщений от имени сообщества'
         }),
         ('Активность', {
             'fields': ('first_visit', 'last_visit', 'total_visits'),
@@ -109,6 +113,12 @@ class VKUserAdmin(admin.ModelAdmin):
             return format_html('<span style="color: orange;">⚠️ Не разрешены в VK</span>')
         return format_html('<span style="color: red;">❌ Отключены</span>')
     notifications_status.short_description = "Уведомления"
+    
+    def messages_status(self, obj):
+        if obj.messages_allowed:
+            return format_html('<span style="color: green;">✅ Разрешены</span>')
+        return format_html('<span style="color: red;">❌ Запрещены</span>')
+    messages_status.short_description = "Сообщения"
     
     def extra_data_display(self, obj):
         import json
@@ -219,3 +229,222 @@ class PushLogAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         return False  # Логи создаются автоматически
+
+
+# ============================================
+# АДМИНКА ДЛЯ НОВОЙ СИСТЕМЫ РАССЫЛОК
+# ============================================
+
+class PushTemplateInline(admin.TabularInline):
+    """Инлайн для шаблонов пушей в рассылке"""
+    model = PushTemplate
+    extra = 1
+    fields = ('title', 'message', 'action_url', 'order')
+    ordering = ('order', 'id')
+
+
+@admin.register(PushCampaign)
+class PushCampaignAdmin(admin.ModelAdmin):
+    """Админка для рассылок пуш-уведомлений"""
+    list_display = ('name', 'status_badge', 'schedule_type_display', 'next_send_time', 'total_sent', 'total_delivered', 'created_at')
+    list_filter = ('status', 'schedule_type', 'created_at')
+    search_fields = ('name', 'description')
+    readonly_fields = ('total_sent', 'total_delivered', 'total_failed', 'started_at', 'completed_at', 'created_at', 'updated_at', 'next_send_time')
+    filter_horizontal = ('target_users',)
+    ordering = ['-created_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'description', 'status')
+        }),
+        ('Расписание', {
+            'fields': ('schedule_type', 'schedule_time', 'schedule_date', 'schedule_days', 'schedule_day_of_month'),
+            'description': 'Настройте расписание отправки рассылки'
+        }),
+        ('Таргетинг', {
+            'fields': ('segment', 'target_users', 'filter_city', 'filter_sex', 'filter_utm_source'),
+            'description': 'Выберите целевую аудиторию для рассылки'
+        }),
+        ('Лимиты', {
+            'fields': ('max_sends_per_day', 'total_sends_limit'),
+            'classes': ('collapse',)
+        }),
+        ('Статистика', {
+            'fields': ('total_sent', 'total_delivered', 'total_failed'),
+            'classes': ('collapse',)
+        }),
+        ('Даты', {
+            'fields': ('started_at', 'completed_at', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    inlines = [PushTemplateInline]
+    
+    actions = ['activate_campaign', 'pause_campaign', 'send_now_campaign']
+    
+    def status_badge(self, obj):
+        colors = {
+            'draft': 'gray',
+            'active': 'green',
+            'paused': 'orange',
+            'completed': 'blue',
+        }
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
+            colors.get(obj.status, 'gray'),
+            obj.get_status_display()
+        )
+    status_badge.short_description = "Статус"
+    
+    def schedule_type_display(self, obj):
+        schedule_names = {
+            'once': '📅 Разовая',
+            'daily': '🔄 Ежедневно',
+            'weekly': '📆 Еженедельно',
+            'monthly': '🗓️ Ежемесячно',
+            'custom': '⚙️ Произвольное',
+        }
+        return schedule_names.get(obj.schedule_type, obj.schedule_type)
+    schedule_type_display.short_description = "Расписание"
+    
+    def next_send_time(self, obj):
+        if obj.status != 'active':
+            return "—"
+        next_time = obj.get_next_send_time()
+        if next_time:
+            return next_time.strftime('%d.%m.%Y %H:%M')
+        return "Не запланировано"
+    next_send_time.short_description = "Следующая отправка"
+    
+    def activate_campaign(self, request, queryset):
+        """Активировать рассылку"""
+        count = 0
+        for campaign in queryset:
+            if campaign.status == 'draft':
+                campaign.status = 'active'
+                if not campaign.started_at:
+                    from django.utils import timezone
+                    campaign.started_at = timezone.now()
+                campaign.save()
+                count += 1
+        self.message_user(request, f"Активировано рассылок: {count}", messages.SUCCESS)
+    activate_campaign.short_description = "▶️ Активировать"
+    
+    def pause_campaign(self, request, queryset):
+        """Приостановить рассылку"""
+        updated = queryset.update(status='paused')
+        self.message_user(request, f"Приостановлено рассылок: {updated}", messages.WARNING)
+    pause_campaign.short_description = "⏸️ Приостановить"
+    
+    def send_now_campaign(self, request, queryset):
+        """Отправить рассылку немедленно"""
+        from .services import send_campaign_push
+        success_count = 0
+        error_count = 0
+        
+        for campaign in queryset:
+            if campaign.status == 'active' and campaign.templates.exists():
+                try:
+                    stats = send_campaign_push(campaign.id)
+                    success_count += 1
+                    self.message_user(
+                        request,
+                        f'✅ "{campaign.name}": отправлено {stats.get("sent", 0)}, доставлено {stats.get("delivered", 0)}, ошибок {stats.get("failed", 0)}',
+                        messages.SUCCESS
+                    )
+                except Exception as e:
+                    error_count += 1
+                    self.message_user(request, f'❌ Ошибка "{campaign.name}": {str(e)}', messages.ERROR)
+            else:
+                self.message_user(request, f'⚠️ "{campaign.name}": рассылка не активна или нет шаблонов', messages.WARNING)
+        
+        if success_count > 0:
+            self.message_user(request, f'🎉 Успешно отправлено рассылок: {success_count}', messages.SUCCESS)
+    send_now_campaign.short_description = "📤 Отправить сейчас"
+
+
+@admin.register(PushTemplate)
+class PushTemplateAdmin(admin.ModelAdmin):
+    """Админка для шаблонов пушей"""
+    list_display = ('title', 'campaign', 'order', 'times_used', 'created_at')
+    list_filter = ('campaign', 'created_at')
+    search_fields = ('title', 'message', 'campaign__name')
+    readonly_fields = ('times_used', 'created_at')
+    ordering = ['campaign', 'order', 'id']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('campaign', 'title', 'message')
+        }),
+        ('Действие', {
+            'fields': ('action_url', 'action_type')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'times_used')
+        }),
+        ('Даты', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(SentPush)
+class SentPushAdmin(admin.ModelAdmin):
+    """Админка для истории отправленных пушей"""
+    list_display = ('title', 'campaign', 'user_info', 'status_badge', 'sent_at', 'clicked_at')
+    list_filter = ('status', 'campaign', 'sent_at')
+    search_fields = ('title', 'message', 'user__vk_user_id', 'user__first_name', 'user__last_name', 'campaign__name')
+    readonly_fields = ('campaign', 'template', 'user', 'title', 'message', 'action_url', 'status', 'error_message', 'sent_at', 'clicked_at', 'vk_response_display')
+    ordering = ['-sent_at']
+    date_hierarchy = 'sent_at'
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('campaign', 'template', 'user')
+        }),
+        ('Содержание', {
+            'fields': ('title', 'message', 'action_url')
+        }),
+        ('Статус', {
+            'fields': ('status', 'error_message')
+        }),
+        ('Временные метки', {
+            'fields': ('sent_at', 'clicked_at')
+        }),
+        ('Ответ VK API', {
+            'fields': ('vk_response_display',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def user_info(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name} (VK ID: {obj.user.vk_user_id})"
+    user_info.short_description = "Пользователь"
+    
+    def status_badge(self, obj):
+        colors = {
+            'sent': 'blue',
+            'delivered': 'green',
+            'failed': 'red',
+            'clicked': 'purple',
+        }
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
+            colors.get(obj.status, 'gray'),
+            obj.get_status_display()
+        )
+    status_badge.short_description = "Статус"
+    
+    def vk_response_display(self, obj):
+        import json
+        return format_html('<pre>{}</pre>', json.dumps(obj.vk_response, indent=2, ensure_ascii=False))
+    vk_response_display.short_description = "Ответ VK API"
+    
+    def has_add_permission(self, request):
+        return False  # Отправленные пуши создаются автоматически
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # Отправленные пуши нельзя изменять

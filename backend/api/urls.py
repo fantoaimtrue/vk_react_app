@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (
     mfo_list, mfo_detail, utm_track, utm_stats, offers_list, upload_mfo_excel, mfo_template,
-    user_register, user_allow_notifications, user_status, push_click_track, users_stats,
-    send_to_leads_tech
+    user_register, user_allow_notifications, user_allow_messages, user_status, push_click_track, users_stats,
+    send_to_leads_tech, track_session
 )
 
 # URL-ы API
@@ -21,10 +21,12 @@ urlpatterns = [
     # UTM отслеживание
     path('utm-track/', utm_track, name='utm-track'),
     path('utm-stats/', utm_stats, name='utm-stats'),
+    path('track-session/', track_session, name='track-session'),  # Optional: VK Ads campaign session tracking
     
     # Пользователи endpoints
     path('users/register/', user_register, name='user-register'),
     path('users/allow-notifications/', user_allow_notifications, name='user-allow-notifications'),
+    path('users/allow-messages/', user_allow_messages, name='user-allow-messages'),
     path('users/status/', user_status, name='user-status'),
     path('users/stats/', users_stats, name='users-stats'),
     

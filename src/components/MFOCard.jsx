@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMFODynamicLink } from '../hooks/useDynamicLinks';
+import { useTracking } from '../contexts/TrackingContext';
 import './MFOCard.css';
 
 const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
   // Получаем динамическую ссылку для данного MFO
   const { dynamicLink, isLoading: linkLoading } = useMFODynamicLink(mfo);
+  // Получаем tracking данные для добавления sub4/sub5
+  const { buildUrl } = useTracking();
 
   const isEligible =
     requestedAmount >= mfo.sum_min &&
@@ -38,7 +41,7 @@ const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
         <div className="mfo-params-static">
           <p>Сумма: от {mfo.sum_min} до {mfo.sum_max} ₽</p>
           <p>Срок: от {mfo.term_min} до {mfo.term_max} дней</p>
-          <p>Ставка: от {mfo.rate}% в день</p>
+          <p>Ставка: от {mfo.rate} в день</p>
         </div>
         {isEligible && (
           <div className="mfo-calculation">
@@ -50,7 +53,7 @@ const MFOCard = ({ mfo, requestedAmount, requestedTerm }) => {
       <div className="mfo-card-footer">
         {isEligible && (
           <a
-            href={dynamicLink || mfo.link}
+            href={buildUrl(dynamicLink || mfo.link)}
             target="_blank"
             rel="noopener noreferrer"
             className="details-link"

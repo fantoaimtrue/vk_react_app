@@ -139,6 +139,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",  # ИСПРАВЛЕНИЕ: Vite dev server на порту 5174
+    "http://127.0.0.1:5174",
+    "https://bodyexp.ru",  # Продакшен
+    "https://www.bodyexp.ru",
+]
+
+# Разрешаем CORS для поддоменов serveo.net (для VK Tunnel)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.serveo\.net$",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -149,6 +158,7 @@ CSRF_TRUSTED_ORIGINS = [
 # VK Mini App Settings
 VK_APP_ACCESS_TOKEN = os.environ.get('VK_APP_ACCESS_TOKEN', '')
 VK_APP_ID = os.environ.get('VK_APP_ID', '')
+VK_GROUP_ID = os.environ.get('VK_GROUP_ID', '230927358')  # ID сообщества для отправки сообщений
 
 # Sentry Configuration for Error Monitoring
 SENTRY_DSN = os.environ.get('SENTRY_DSN', '')

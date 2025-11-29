@@ -16,22 +16,11 @@ COPY . .
 # Собираем приложение для продакшена
 RUN npm run build
 
-# ---- Этап 2: Настройка Nginx ----
-FROM nginx:1.25-alpine
+# ---- Этап 2: Копирование в финальный образ ----
+FROM busybox:latest
 
-# Копируем собранные файлы из этапа сборки
-COPY --from=build /app/dist /usr/share/nginx/html
+# Копируем собранные файлы
+COPY --from=build /app/dist /dist
 
-# Копируем статические файлы Django из backend контейнера
-COPY --from=babkimanki_backend /app/staticfiles /usr/share/nginx/html/static
-
-# Копируем конфигурацию Nginx с SSL
-COPY nginx-ssl-with-backend.conf /etc/nginx/conf.d/default.conf
-
-# SSL сертификаты будут монтироваться через volume в docker-compose
-
-# Открываем порты 80 и 443
-EXPOSE 80 443
-
-# Запускаем Nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Команда которая копирует файлы в volume при запуске
+CMD ["sh", "-c", "cp -r /dist/* /usr/share/nginx/html/ && echo 'Frontend files copied' && tail -f /dev/null"]

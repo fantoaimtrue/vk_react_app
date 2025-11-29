@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import LoanCalculator from '../components/LoanCalculator';
 import LoanWizard from '../components/LoanWizard';
 import MFOCardWithUTM from '../components/MFOCardWithUTM';
+import { useTracking } from '../contexts/TrackingContext';
 import { useMFOs } from '../hooks/useMFOs';
 import useUTMTracker from '../hooks/useUTMTracker';
-import { trackEvent } from '../utils/vkEvents';
+import useArbitrageTracker from '../hooks/useArbitrageTracker';
 import logger from '../utils/logger';
 import './MFOHome.css';
 
@@ -13,16 +14,24 @@ const INITIAL_ITEMS_TO_SHOW = 9;
 const ITEMS_PER_LOAD = 9;
 
 const MFOHomeWithUTM = () => {
-    console.log('🔴 [MFOHomeWithUTM] Компонент рендерится');
-    logger.info('🔴 [MFOHomeWithUTM] Компонент рендерится');
-    
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [amount, setAmount] = useState(15000);
     const [term, setTerm] = useState(15);
     const [itemsToShow, setItemsToShow] = useState(INITIAL_ITEMS_TO_SHOW);
     const [sortPriority, setSortPriority] = useState('approval');
-    const [isTracking, setIsTracking] = useState(false);
+
+    // Добавляем/убираем класс на body при открытии/закрытии калькулятора
+    useEffect(() => {
+        if (isCalculatorOpen) {
+            document.body.classList.add('calculator-open');
+        } else {
+            document.body.classList.remove('calculator-open');
+        }
+        return () => {
+            document.body.classList.remove('calculator-open');
+        };
+    }, [isCalculatorOpen]);
 
     const {
         utmParams,
@@ -41,23 +50,15 @@ const MFOHomeWithUTM = () => {
         fetchMfos
     } = useMFOs({ amount, term, sortPriority });
 
-    useEffect(() => {
-        const state = {
-            loading,
-            error,
-            filteredMfosCount: filteredMfos?.length || 0,
-            itemsToShow,
-            amount,
-            term,
-            utmLoading,
-            isUserDataReady,
-            utmParams: Object.keys(utmParams || {}).length
-        };
-        logger.info('📊 [MFOHomeWithUTM] Состояние:', state);
-        if (!loading && !error && filteredMfos && filteredMfos.length > 0) {
-            logger.info(`✅ [MFOHomeWithUTM] Готово к рендерингу: ${filteredMfos.length} офферов`);
-        }
-    }, [loading, error, filteredMfos?.length, itemsToShow, amount, term, utmLoading, isUserDataReady, utmParams]);
+    // Инициализация арбитражного трекера для leads.tech
+    const {
+        sendToLeadsTech,
+    } = useArbitrageTracker();
+
+    // Получаем tracking данные для добавления sub4/sub5
+    const { buildUrl } = useTracking();
+
+    // Убрали избыточный useEffect с логированием для оптимизации
 
     const loadMoreRef = useRef(null);
 
@@ -75,9 +76,11 @@ const MFOHomeWithUTM = () => {
             ref: filterValue(getUTMParam('utm_campaign') || getUTMParam('vk_ref') || getUTMParam('ref') || getUTMParam('vk_ad_id') || getUTMParam('ad_id') || ''),
             ref_campaign: filterValue(getUTMParam('ref_campaign') || getUTMParam('campaign_id') || ''),
             ref_ad: filterValue(getUTMParam('ref_ad') || getUTMParam('ad_id') || getUTMParam('vk_ad_id') || ''),
-            sub6: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || ''),
-            ref_source: filterValue(getUTMParam('utm_source') || getUTMParam('vk_ref_source') || getUTMParam('ref_source') || ''),
-            user_id: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || ''),
+            sub6: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || getUTMParam('utm_term') || ''),
+            // ИСПРАВЛЕНИЕ: Используем utm_source как fallback для ref_source если ref_source пуст
+            ref_source: filterValue(getUTMParam('ref_source') || getUTMParam('vk_ref_source') || getUTMParam('utm_source') || 'vk_mini_app'),
+            // ИСПРАВЛЕНИЕ: Добавляем utm_term как fallback для user_id
+            user_id: filterValue(userData.id || getUTMParam('vk_user_id') || getUTMParam('user_id') || getUTMParam('utm_term') || ''),
             // Если utm_source не определен, используем 'vk_mini_app' по умолчанию
             utm_source: filterValue(getUTMParam('utm_source') || 'vk_mini_app'),
             utm_medium: filterValue(getUTMParam('utm_medium') || ''),
@@ -85,42 +88,76 @@ const MFOHomeWithUTM = () => {
             utm_content: filterValue(getUTMParam('utm_content') || ''),
             utm_term: filterValue(getUTMParam('utm_term') || '')
         };
-        
-        // Логируем для отладки
-        logger.debug('🔍 [generateMFOLink] additionalParams:', additionalParams);
-        console.log('🔍 [generateMFOLink] additionalParams:', additionalParams);
-        
+
         return generateLinkWithUTM(mfo.link, additionalParams);
     }, [generateLinkWithUTM, getUTMParam, userData]);
 
-    const handleMFOClick = useCallback(async (mfo) => {
-        if (isTracking) return;
-        setIsTracking(true);
+    // Простая функция отправки аналитики в фоне (не блокирует клик)
+    const sendAnalytics = useCallback(async (mfo, link) => {
         try {
-            const link = generateMFOLink(mfo);
-            if (userData && userData.id) {
-                trackEvent({ eventName: 'lead', userId: userData.id });
-            }
-            await fetch('/api/utm-track/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    utm_params: utmParams,
-                    user_data: userData,
-                    event_type: 'mfo_click',
-                    mfo_data: { id: mfo.id, name: mfo.name, link: link },
-                    timestamp: new Date().toISOString(),
-                    url: window.location.href
-                })
+            // Отправляем все запросы параллельно, не ждем результата
+            Promise.allSettled([
+                // UTM tracking
+                fetch('/api/utm-track/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        utm_params: utmParams,
+                        user_data: userData,
+                        event_type: 'mfo_click',
+                        mfo_data: { id: mfo.id, name: mfo.name, link },
+                        timestamp: new Date().toISOString(),
+                        url: window.location.href
+                    })
+                }),
+
+                // Leads.tech tracking (только если есть offer_id)
+                mfo.id ? sendToLeadsTech(userData, utmParams, { offer_id: mfo.id }) : Promise.resolve()
+            ]).then(results => {
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        logger.debug(`Analytics ${index} failed:`, result.reason);
+                    }
+                });
             });
-            window.open(link, '_blank');
-        } catch (error) {
-            logger.error('❌ Ошибка при клике на МФО:', error);
-            window.open(mfo.link, '_blank');
-        } finally {
-            setIsTracking(false);
+        } catch (err) {
+            // Ошибки аналитики не критичны, просто логируем
+            logger.debug('Analytics error:', err);
         }
-    }, [generateLinkWithUTM, utmParams, userData, isTracking]);
+    }, [utmParams, userData, sendToLeadsTech]);
+
+    const handleMFOClick = useCallback((mfo) => {
+        try {
+            console.log('🔵 Клик на МФО:', mfo.name);
+
+            // 1. Генерируем ссылку с UTM параметрами
+            const link = buildUrl(generateMFOLink(mfo));
+            console.log('🔗 Открываем ссылку:', link);
+
+            // 2. Открываем ссылку СРАЗУ (синхронно, без await)
+            const win = window.open(link, '_blank');
+
+            if (!win) {
+                // Если pop-up заблокирован браузером
+                console.warn('⚠️ Pop-up заблокирован, используем location.href');
+                window.location.href = link;
+            } else {
+                console.log('✅ Ссылка открыта в новой вкладке');
+            }
+
+            // 3. Отправляем аналитику в фоне (не ждем результата)
+            sendAnalytics(mfo, link);
+
+        } catch (error) {
+            console.error('❌ Ошибка при клике:', error);
+            // Fallback: открываем базовую ссылку без UTM
+            try {
+                window.open(mfo.link, '_blank');
+            } catch (fallbackError) {
+                console.error('❌ Даже fallback не сработал:', fallbackError);
+            }
+        }
+    }, [generateMFOLink, buildUrl, sendAnalytics]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -167,15 +204,15 @@ const MFOHomeWithUTM = () => {
                     onCancel={() => setIsWizardOpen(false)}
                 />
             )}
-            <div style={{ padding: '0 10px', maxWidth: '100%', boxSizing: 'border-box' }}>
+            <div style={{ padding: '0 10px', maxWidth: '100%', boxSizing: 'border-box' }} className="main-content-wrapper">
                 {/* Кнопка для открытия/закрытия калькулятора */}
-                <div style={{ textAlign: 'center', marginBottom: '20px', padding: '20px' }}>
-                    <button 
+                <div style={{ textAlign: 'center', padding: '20px' }} className="calculator-button-wrapper">
+                    <button
                         onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
                         className={`open-calculator-button ${isCalculatorOpen ? 'calculator-open' : ''}`}
                         style={{
-                            background: isCalculatorOpen 
-                                ? 'linear-gradient(135deg, #DC5A2A 0%, #ED713C 100%)' 
+                            background: isCalculatorOpen
+                                ? 'linear-gradient(135deg, #DC5A2A 0%, #ED713C 100%)'
                                 : 'linear-gradient(135deg, #ED713C 0%, #DC5A2A 100%)',
                             color: 'white',
                             border: 'none',
@@ -192,7 +229,7 @@ const MFOHomeWithUTM = () => {
                         }}
                     >
                         <span>{isCalculatorOpen ? 'Скрыть калькулятор' : 'Выбрать сумму и срок'}</span>
-                        <span style={{ 
+                        <span style={{
                             transition: 'transform 0.3s ease',
                             transform: isCalculatorOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                             display: 'inline-block'
@@ -211,29 +248,32 @@ const MFOHomeWithUTM = () => {
                             maxAmount={maxLoanAmount}
                             maxTerm={90}
                         />
-                        <button 
+                        <button
                             className="calculator-show-offers-button"
                             onClick={() => {
-                                // Закрываем калькулятор сразу
+                                // Закрываем калькулятор
                                 setIsCalculatorOpen(false);
-                                
-                                // Ждем завершения анимации закрытия калькулятора перед скроллом
-                                // Это предотвращает двойной скачок: сначала калькулятор закрывается,
-                                // затем выполняется плавный скролл к списку офферов
+
+                                // Ждем завершения анимации закрытия (350ms) + небольшой запас
+                                // чтобы скролл происходил ПОСЛЕ того, как калькулятор полностью закрылся
+                                // Это предотвращает двойной скачок
                                 setTimeout(() => {
                                     const mfoListElement = document.querySelector('.mfo-list');
+
                                     if (mfoListElement) {
-                                        const elementRect = mfoListElement.getBoundingClientRect();
-                                        const elementTop = elementRect.top + window.pageYOffset;
+                                        // Получаем позицию элемента после закрытия калькулятора
+                                        const rect = mfoListElement.getBoundingClientRect();
+                                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                        const elementTop = rect.top + scrollTop;
                                         const offset = 100; // Отступ от верха экрана
-                                        
-                                        // Выполняем скролл только один раз после закрытия калькулятора
+
+                                        // Выполняем скролл один раз, после закрытия калькулятора
                                         window.scrollTo({
                                             top: Math.max(0, elementTop - offset),
                                             behavior: 'smooth'
                                         });
                                     }
-                                }, 450); // Время анимации закрытия калькулятора (400ms) + небольшой запас
+                                }, 400); // Время анимации закрытия + запас для обновления DOM
                             }}
                         >
                             Показать предложения
@@ -250,7 +290,7 @@ const MFOHomeWithUTM = () => {
                                 requestedAmount={amount}
                                 requestedTerm={term}
                                 onClick={() => handleMFOClick(mfo)}
-                                isLoading={utmLoading || isTracking}
+                                isLoading={utmLoading}
                                 isDataReady={isUserDataReady || !!utmParams.utm_term}
                             />
                         ))

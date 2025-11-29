@@ -24,32 +24,35 @@ export const useUTMTracker = () => {
     // Функция для фильтрации и очистки значений
     const filterValue = (value) => {
       if (!value) return null;
-      
+
       // Преобразуем в строку и декодируем URL-encoded значения
       let cleanValue = String(value);
-      
+
       // Декодируем URL encoding (%7B → {, %7D → })
       try {
         cleanValue = decodeURIComponent(cleanValue);
       } catch (e) {
         // Если декодирование не удалось, оставляем как есть
       }
-      
-      // Удаляем двойные скобки {{ }} (незаменённые макросы VK)
-      cleanValue = cleanValue.replace(/\{\{([^}]+)\}\}/g, '');
-      
+
+      // ИСПРАВЛЕНО: Проверяем на незаменённые макросы VK ПЕРЕД очисткой
+      if (cleanValue.includes('{{') || cleanValue.includes('}}')) {
+        // Это незаменённый макрос VK - используем fallback
+        return null;
+      }
+
       // Удаляем одинарные скобки { } (неправильный формат VK)
       cleanValue = cleanValue.replace(/^\{([^}]+)\}$/, '$1');
-      
+
       // Проверяем на пустоту после очистки
       if (!cleanValue || cleanValue.trim() === '') return null;
-      
+
       const lowerValue = cleanValue.toLowerCase();
       // Фильтруем значения "other", "unknown", "null", "undefined"
       if (['other', 'unknown', 'null', 'undefined', 'none', ''].includes(lowerValue)) {
         return null;
       }
-      
+
       return cleanValue.trim();
     };
 
@@ -75,7 +78,7 @@ export const useUTMTracker = () => {
 
     // Извлекаем параметры из query string (?param=value)
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     // Извлекаем параметры из hash (#param=value)
     // VK Mini Apps часто передают параметры в хеше!
     // Пробуем сначала получить оригинальный hash из sessionStorage (если он был сохранен)
@@ -83,14 +86,13 @@ export const useUTMTracker = () => {
     const savedHash = sessionStorage.getItem('originalHash');
     if (savedHash && savedHash !== '#' && savedHash !== '#/') {
       hashToUse = savedHash;
-      console.log('📦 [extractUTMFromURL] Используем сохраненный hash:', savedHash);
+      logger.debug('📦 [extractUTMFromURL] Используем сохраненный hash:', savedHash);
     }
-    
+
     let hashString = hashToUse.substring(1); // убираем #
     // Клиент VK может добавлять / в начало хеша при переходе из чатов
-    if (hashString.startsWith('/')) {
-      hashString = hashString.substring(1);
-    }
+    // ИСПРАВЛЕНО: убираем все лишние слеши и знаки вопроса
+    hashString = hashString.replace(/^[\/\?]+/, '');
     const hashParams = new URLSearchParams(hashString);
 
     logger.debug('🔍 Извлечение UTM параметров:', {
@@ -101,58 +103,96 @@ export const useUTMTracker = () => {
       'hashParams': Array.from(hashParams.entries()),
       'urlParams': Array.from(urlParams.entries())
     });
-    
+
     // Логируем специально для отладки ref_campaign и ref_ad
-    console.log('🔍 [extractUTMFromURL] hashParams:', Array.from(hashParams.entries()));
-    console.log('🔍 [extractUTMFromURL] ref_campaign из hash:', hashParams.get('ref_campaign'));
-    console.log('🔍 [extractUTMFromURL] ref_ad из hash:', hashParams.get('ref_ad'));
+    logger.debug('🔍 [extractUTMFromURL] hashParams:', Array.from(hashParams.entries()));
+    logger.debug('🔍 [extractUTMFromURL] ref_campaign из hash:', hashParams.get('ref_campaign'));
+    logger.debug('🔍 [extractUTMFromURL] ref_ad из hash:', hashParams.get('ref_ad'));
 
     const allKeys = [...utmKeys, ...vkKeys, ...arbKeys];
 
     // Сначала извлекаем параметры из query string
     const queryData = {};
     allKeys.forEach(key => {
-        const value = urlParams.get(key);
-        if (value) {
-            queryData[key] = value;
-        }
+      const value = urlParams.get(key);
+      if (value) {
+        queryData[key] = value;
+      }
     });
 
     // Затем извлекаем параметры из hash
     const hashData = {};
     allKeys.forEach(key => {
-        const value = hashParams.get(key);
-        if (value) {
-            hashData[key] = value;
-        }
+      const value = hashParams.get(key);
+      if (value) {
+        hashData[key] = value;
+      }
     });
 
     // Объединяем параметры с умной логикой:
     // 1. Hash имеет приоритет, НО только если значение не пустое
     // 2. Если в hash пустая строка, берём значение из query
-    // Это важно для VK бота, который может передавать ref в query, но пустой в hash
+    // 3. ЭКСПЕРТ СОВЕТ: Маппим ref → utm_campaign, ref_source → utm_content
     const combinedParams = { ...queryData };
     Object.entries(hashData).forEach(([key, value]) => {
-        // Заменяем значение из query только если значение из hash НЕ пустое
-        if (value && value.trim() !== '') {
-            combinedParams[key] = value;
-        }
+      // Заменяем значение из query только если значение из hash НЕ пустое
+      if (value && value.trim() !== '') {
+        combinedParams[key] = value;
+      }
     });
+
+    // МАППИНГ по совету эксперта: ref/ref_source → UTM
+    // УМНАЯ ОБРАБОТКА незаменённых макросов VK
+    // ВАЖНО: Сохраняем ref и ref_source в итоговых данных для передачи в leads.tech
+    if (combinedParams.ref) {
+      if (combinedParams.ref.includes('{{') || combinedParams.ref.includes('}}')) {
+        // Это незаменённый макрос VK - используем fallback или генерируем динамический
+        combinedParams.utm_campaign = combinedParams.fallback_campaign || 'bot_' + Date.now();
+        // Удаляем неразрешённый макрос
+        delete combinedParams.ref;
+      } else {
+        // Это реальное значение из VK рекламы - маппим в utm_campaign
+        // НО сохраняем ref для передачи в leads.tech
+        if (!combinedParams.utm_campaign) {
+          combinedParams.utm_campaign = combinedParams.ref;
+        }
+        // ref сохраняется в combinedParams и попадет в итоговый utmData
+      }
+    }
+
+    if (combinedParams.ref_source) {
+      if (combinedParams.ref_source.includes('{{') || combinedParams.ref_source.includes('}}')) {
+        // Это незаменённый макрос VK - используем fallback
+        combinedParams.utm_content = combinedParams.fallback_source || 'auto_message';
+        // Удаляем неразрешённый макрос
+        delete combinedParams.ref_source;
+      } else {
+        // Это реальное значение - маппим в utm_content
+        // НО сохраняем ref_source для передачи в leads.tech
+        if (!combinedParams.utm_content) {
+          combinedParams.utm_content = combinedParams.ref_source;
+        }
+        // ref_source сохраняется в combinedParams и попадет в итоговый utmData
+      }
+    }
 
     // Фильтруем и сохраняем итоговые параметры
     Object.entries(combinedParams).forEach(([key, value]) => {
-        const filteredValue = filterValue(value);
-        if (filteredValue) {
-            utmData[key] = filteredValue;
-        }
+      const filteredValue = filterValue(value);
+      if (filteredValue) {
+        utmData[key] = filteredValue;
+      }
     });
 
     logger.info('✅ Извлечённые UTM параметры:', utmData);
-    
-    // Логируем специально для отладки ref_campaign и ref_ad
-    console.log('✅ [extractUTMFromURL] Итоговые UTM параметры:', utmData);
-    console.log('✅ [extractUTMFromURL] ref_campaign в итоговых:', utmData.ref_campaign);
-    console.log('✅ [extractUTMFromURL] ref_ad в итоговых:', utmData.ref_ad);
+
+    // Логируем специально для отладки ref, ref_source, ref_campaign и ref_ad
+    logger.debug('✅ [extractUTMFromURL] Итоговые UTM параметры:', utmData);
+    logger.debug('✅ [extractUTMFromURL] ref в итоговых:', utmData.ref);
+    logger.debug('✅ [extractUTMFromURL] ref_source в итоговых:', utmData.ref_source);
+    logger.debug('✅ [extractUTMFromURL] ref_campaign в итоговых:', utmData.ref_campaign);
+    logger.debug('✅ [extractUTMFromURL] ref_ad в итоговых:', utmData.ref_ad);
+    logger.debug('✅ [extractUTMFromURL] utm_term в итоговых:', utmData.utm_term);
 
     return utmData;
   }, []);
@@ -263,7 +303,27 @@ export const useUTMTracker = () => {
     if (!templateUrl) return '';
 
     let dynamicUrl = templateUrl;
-    const allParams = { ...utmParams, ...additionalParams };
+
+    // КРИТИЧЕСКИ ВАЖНО: Извлекаем sub1 из исходной ссылки МФО и защищаем его от перезаписи
+    // sub1 - это идентификатор МФО и должен оставаться неизменным!
+    let protectedSub1 = null;
+    try {
+      const urlObj = new URL(templateUrl);
+      protectedSub1 = urlObj.searchParams.get('sub1');
+      logger.debug('🔒 [generateLinkWithUTM] Защищенный sub1 из ссылки МФО:', protectedSub1);
+    } catch (e) {
+      // Если не удалось распарсить URL, пытаемся извлечь sub1 вручную
+      const sub1Match = templateUrl.match(/[?&]sub1=([^&]*)/);
+      if (sub1Match) {
+        protectedSub1 = decodeURIComponent(sub1Match[1]);
+        logger.debug('🔒 [generateLinkWithUTM] Защищенный sub1 из ссылки (regex):', protectedSub1);
+      }
+    }
+
+    // Удаляем sub1 из utmParams и additionalParams, чтобы он не перезаписывался
+    const { sub1: _, ...utmParamsWithoutSub1 } = utmParams;
+    const { sub1: __, ...additionalParamsWithoutSub1 } = additionalParams;
+    const allParams = { ...utmParamsWithoutSub1, ...additionalParamsWithoutSub1 };
 
     // Функция для проверки валидности значения
     const isValidValue = (value) => {
@@ -291,7 +351,7 @@ export const useUTMTracker = () => {
     } catch (e) {
       // Если декодирование не удалось, оставляем как есть
     }
-    
+
     // Логируем для отладки
     logger.debug('🔍 [generateLinkWithUTM] Исходная ссылка:', dynamicUrl);
     logger.debug('🔍 [generateLinkWithUTM] Параметры для замены:', allParams);
@@ -301,7 +361,7 @@ export const useUTMTracker = () => {
       const placeholder = `{${key}}`;
       // Ищем плейсхолдер в обычном виде и в URL-кодированном виде
       const encodedPlaceholder = encodeURIComponent(placeholder);
-      
+
       if (dynamicUrl.includes(placeholder) || dynamicUrl.includes(encodedPlaceholder)) {
         if (isValidValue(value)) {
           // Заменяем плейсхолдер на валидное значение (и в обычном, и в кодированном виде)
@@ -341,7 +401,7 @@ export const useUTMTracker = () => {
         }
       }
     });
-    
+
     // Удаляем все оставшиеся плейсхолдеры (которые не были заменены)
     // Это важно, чтобы плейсхолдеры не оставались в URL
     // Обрабатываем как обычные плейсхолдеры, так и URL-кодированные
@@ -356,7 +416,7 @@ export const useUTMTracker = () => {
       // Параметр будет удален позже в процессе очистки
       return '';
     });
-    
+
     // Также обрабатываем URL-кодированные плейсхолдеры
     dynamicUrl = dynamicUrl.replace(/%7B([^%]+)%7D/g, (match, key) => {
       const defaultValue = defaultValues[key];
@@ -365,7 +425,7 @@ export const useUTMTracker = () => {
       }
       return '';
     });
-    
+
     // Удаляем параметры, которые содержат пустые значения после замены плейсхолдеров
     // Это нужно, чтобы удалить параметры вида sub2= или sub3=
     dynamicUrl = dynamicUrl.replace(/[?&](\w+)=&/g, (match, paramName) => {
@@ -373,7 +433,7 @@ export const useUTMTracker = () => {
       return match.includes('?') ? '?' : '&';
     });
     dynamicUrl = dynamicUrl.replace(/[?&](\w+)=$/g, '');
-    
+
     // Очищаем лишние символы ? и & после удаления параметров
     dynamicUrl = dynamicUrl
       .replace(/\?&/g, '?')  // ?& -> ?
@@ -399,11 +459,10 @@ export const useUTMTracker = () => {
     // Добавляем дополнительные параметры, которые не были подставлены через плейсхолдеры
     // Это нужно для параметров типа ref_campaign, ref_ad и т.д.
     const additionalParamsToAdd = ['ref_campaign', 'ref_ad', 'campaign_id', 'ad_id'];
-    
+
     // Логируем для отладки
     logger.debug('🔍 [generateLinkWithUTM] allParams перед добавлением дополнительных:', allParams);
-    console.log('🔍 [generateLinkWithUTM] allParams перед добавлением дополнительных:', allParams);
-    
+
     try {
       // Пытаемся создать URL объект (работает только для абсолютных URL)
       const urlObj = new URL(dynamicUrl);
@@ -435,9 +494,36 @@ export const useUTMTracker = () => {
       });
     }
 
+    // КРИТИЧЕСКИ ВАЖНО: Восстанавливаем защищенный sub1 из исходной ссылки МФО
+    // Это гарантирует, что sub1 всегда будет правильным, даже если он был случайно удален
+    if (protectedSub1) {
+      try {
+        const urlObj = new URL(dynamicUrl);
+        const currentSub1 = urlObj.searchParams.get('sub1');
+        // Если sub1 отсутствует или отличается от защищенного, восстанавливаем его
+        if (!currentSub1 || currentSub1 !== protectedSub1) {
+          urlObj.searchParams.set('sub1', protectedSub1);
+          dynamicUrl = urlObj.toString();
+          logger.debug('🔒 [generateLinkWithUTM] Восстановлен защищенный sub1:', protectedSub1);
+        }
+      } catch (e) {
+        // Если не удалось распарсить URL, восстанавливаем sub1 вручную
+        const sub1Regex = /[?&]sub1=[^&]*/;
+        if (sub1Regex.test(dynamicUrl)) {
+          // Заменяем существующий sub1
+          dynamicUrl = dynamicUrl.replace(sub1Regex, `sub1=${encodeURIComponent(protectedSub1)}`);
+        } else {
+          // Добавляем sub1, если его нет
+          const separator = dynamicUrl.includes('?') ? '&' : '?';
+          dynamicUrl += `${separator}sub1=${encodeURIComponent(protectedSub1)}`;
+        }
+        logger.debug('🔒 [generateLinkWithUTM] Восстановлен защищенный sub1 (regex):', protectedSub1);
+      }
+    }
+
     // Логируем финальную ссылку для отладки
     logger.debug('✅ [generateLinkWithUTM] Финальная ссылка:', dynamicUrl);
-    
+
     return dynamicUrl;
   }, [utmParams]);
 
@@ -448,32 +534,28 @@ export const useUTMTracker = () => {
   useEffect(() => {
     const initializeUTMTracker = async () => {
       try {
-        console.log('🔴 [useUTMTracker] Инициализация UTM трекера...');
-        console.log('🔴 [useUTMTracker] RAW window.location.href:', window.location.href);
-        console.log('🔴 [useUTMTracker] RAW window.location.hash:', window.location.hash);
-        logger.debug('🔴 RAW window.location.href at start of useEffect:', window.location.href);
-        logger.debug('🔴 RAW window.location.hash at start of useEffect:', window.location.hash);
+        logger.debug('🔴 [useUTMTracker] Инициализация UTM трекера...');
+        logger.debug('🔴 [useUTMTracker] RAW window.location.href:', window.location.href);
+        logger.debug('🔴 [useUTMTracker] RAW window.location.hash:', window.location.hash);
         setIsLoading(true);
         setError(null);
         setIsUserDataReady(false);
 
         // Извлекаем UTM из URL (синхронно, быстро) - ДО того, как HashRouter изменит hash
         const urlUTM = extractUTMFromURL();
-        console.log('🔍 [useUTMTracker] Параметры из URL:', urlUTM);
         logger.info('🔍 Параметры из URL:', urlUTM);
 
         // Получаем данные из VK Bridge с таймаутом (УМЕНЬШЕН до 1 секунды!)
         let vkData;
         try {
-          console.log('🔍 [useUTMTracker] Запрос к VK Bridge...');
+          logger.debug('🔍 [useUTMTracker] Запрос к VK Bridge...');
           const vkDataPromise = getVKParams();
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('VK Bridge timeout')), 1000) // Уменьшено до 1 секунды!
           );
           vkData = await Promise.race([vkDataPromise, timeoutPromise]);
-          console.log('✅ [useUTMTracker] VK Bridge ответил');
+          logger.debug('✅ [useUTMTracker] VK Bridge ответил');
         } catch (vkError) {
-          console.warn('⚠️ [useUTMTracker] VK Bridge недоступен или таймаут (не критично):', vkError);
           logger.warn('⚠️ VK Bridge недоступен или таймаут (не критично):', vkError);
           vkData = {
             userInfo: {},
@@ -482,7 +564,6 @@ export const useUTMTracker = () => {
           };
         }
 
-        console.log('🔍 [useUTMTracker] Данные из VK Bridge:', vkData);
         logger.info('🔍 Данные из VK Bridge:', vkData);
 
         // Объединяем все параметры, отдавая приоритет параметрам из URL
@@ -494,27 +575,27 @@ export const useUTMTracker = () => {
         // Добавляем данные пользователя
         // Если нет ID из VK Bridge, пробуем из UTM параметров
         const userInfo = {
-          id: vkData.userInfo.id || 
-              allUTMParams.vk_user_id || 
-              allUTMParams.user_id || 
-              allUTMParams.utm_term || // VK может передать user_id в utm_term
-              null,
+          id: vkData.userInfo.id ||
+            allUTMParams.vk_user_id ||
+            allUTMParams.user_id ||
+            allUTMParams.utm_term || // VK может передать user_id в utm_term
+            null,
           first_name: vkData.userInfo.first_name || '',
           last_name: vkData.userInfo.last_name || '',
           ...vkData.userInfo
         };
-        
+
         // Устанавливаем итоговые данные СРАЗУ, не дожидаясь backend
-        console.log('✅ [useUTMTracker] Устанавливаем UTM параметры и данные пользователя');
+        logger.debug('✅ [useUTMTracker] Устанавливаем UTM параметры и данные пользователя');
         setUtmParams(allUTMParams);
         setUserData(userInfo);
 
         // Проверяем, есть ли у нас ID пользователя
         if (userInfo.id) {
-            setIsUserDataReady(true);
-            console.log('✅ [useUTMTracker] User ID найден:', userInfo.id);
+          setIsUserDataReady(true);
+          logger.debug('✅ [useUTMTracker] User ID найден:', userInfo.id);
         } else {
-            console.warn('⚠️ [useUTMTracker] User ID не найден');
+          logger.warn('⚠️ [useUTMTracker] User ID не найден');
         }
 
         const trackerInfo = {
@@ -523,22 +604,19 @@ export const useUTMTracker = () => {
           vkAvailable: vkData.vkAvailable,
           isUserDataReady: !!userInfo.id
         };
-        console.log('🎯 [useUTMTracker] UTM Tracker инициализирован:', trackerInfo);
         logger.info('🎯 UTM Tracker инициализирован:', trackerInfo);
 
         // ВАЖНО: Снимаем флаг загрузки СРАЗУ, до отправки на backend!
         setIsLoading(false);
-        console.log('✅ [useUTMTracker] isLoading установлен в false');
+        logger.debug('✅ [useUTMTracker] isLoading установлен в false');
 
         // Отправляем данные на backend АСИНХРОННО, не блокируя загрузку
         // Используем .catch чтобы ошибки не влияли на работу приложения
         sendUTMToBackend(allUTMParams, userInfo).catch(err => {
-          console.warn('⚠️ [useUTMTracker] Ошибка отправки UTM на backend (не критично):', err);
           logger.warn('⚠️ Ошибка отправки UTM на backend (не критично):', err);
         });
 
       } catch (error) {
-        console.error('❌ [useUTMTracker] Ошибка инициализации UTM Tracker (не критично):', error);
         logger.error('❌ Ошибка инициализации UTM Tracker (не критично):', error);
         // НЕ устанавливаем error в state, чтобы не блокировать загрузку
         // Устанавливаем базовые значения
@@ -549,7 +627,7 @@ export const useUTMTracker = () => {
       } finally {
         // ВСЕГДА снимаем флаг загрузки, даже если были ошибки
         setIsLoading(false);
-        console.log('🏁 [useUTMTracker] Инициализация завершена, isLoading=false');
+        logger.debug('🏁 [useUTMTracker] Инициализация завершена, isLoading=false');
       }
     };
 
@@ -584,13 +662,13 @@ export const useUTMTracker = () => {
     isLoading,
     error,
     isUserDataReady,
-    
+
     // Методы
     generateLinkWithUTM,
     updateUTMParams,
     getUTMParam,
     hasUTMParams,
-    
+
     // Утилиты
     sendUTMToBackend: () => sendUTMToBackend(utmParams, userData)
   };

@@ -2,13 +2,10 @@ version: '3.8'
 
 services:
   backend:
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class sync --timeout 30 --max-requests 1000 --max-requests-jitter 50"
     env_file:
       - .env  # Загружаем переменные из .env файла (НЕ КОММИТИТЬ В GIT!)
     restart: unless-stopped
-
-  frontend:
-    ports:
-      - "80:80"
-      - "443:443"
-    restart: unless-stopped
+    # Убираем volume монтирование в продакшене для лучшей производительности
+    # volumes:
+    #   - ./backend:/app

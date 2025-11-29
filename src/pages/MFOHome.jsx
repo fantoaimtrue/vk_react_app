@@ -26,62 +26,42 @@ const MFOHome = () => {
     useEffect(() => {
         const fetchMFOs = async () => {
             try {
-                console.log('Fetching MFOs...');
                 const response = await fetch('/api/mfos/');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const apiData = await response.json();
-                console.log('API response:', apiData);
-
                 const rawData = Array.isArray(apiData) ? apiData : apiData.results;
 
                 if (!Array.isArray(rawData)) {
-                    console.error('Invalid data format:', apiData);
                     throw new Error("Ожидался массив данных, но получен другой тип.");
                 }
 
-                console.log('Raw data length:', rawData.length);
-                const data = rawData.map((mfo, index) => {
+                const data = rawData.map((mfo) => {
                     try {
                         return mapDjangoMfo(mfo);
                     } catch (mappingError) {
-                        console.error(`Error mapping MFO at index ${index}:`, mappingError, mfo);
                         return null;
                     }
-                }).filter(Boolean); // Убираем null значения
+                }).filter(Boolean);
 
-                console.log('Processed data length:', data.length);
-                console.log('First MFO:', data[0]);
                 setMfoList(data);
 
                 if (data.length > 0) {
-                    // Защита от null/undefined значений
                     const maxAmount = Math.max(...data.map(mfo => Number(mfo.sum_max) || 0));
                     const maxTerm = Math.max(...data.map(mfo => Number(mfo.term_max) || 0));
-
-                    // Устанавливаем наши максимальные значения, но не меньше чем в API
                     setMaxLoanAmount(Math.max(maxAmount, 100000));
                     setMaxLoanTerm(Math.max(maxTerm, 90));
-                    console.log('API max amount:', maxAmount, 'API max term:', maxTerm);
-                    console.log('Set max amount: 100000, max term: 90');
                 }
 
             } catch (e) {
-                console.error('Error fetching MFOs:', e);
                 setError(e.message);
             } finally {
-                console.log('Setting loading to false');
                 setLoading(false);
             }
         };
         fetchMFOs();
     }, []);
-
-    // Отладочный useEffect для отслеживания изменений loading
-    useEffect(() => {
-        console.log('Loading state changed to:', loading);
-    }, [loading]);
 
     const observer = useRef();
     const loaderRef = useCallback(node => {
@@ -137,7 +117,6 @@ const MFOHome = () => {
     };
 
     const sortedMFOs = getSortedMFOs();
-    console.log('sortedMFOs in render:', sortedMFOs.length, 'visibleCount:', visibleCount);
 
 
     if (error) {
@@ -180,8 +159,6 @@ const MFOHome = () => {
             {loading ? (
                 <div style={{ padding: '50px', textAlign: 'center', backgroundColor: '#f0f0f0', margin: '20px' }}>
                     <h2>Загрузка МФО...</h2>
-                    <p>Loading state: {loading.toString()}</p>
-                    {console.log('Rendering loading block - loading is:', loading)}
                 </div>
             ) : (
                 <>
@@ -200,7 +177,6 @@ const MFOHome = () => {
                         {visibleCount < sortedMFOs.length && (
                             <div style={{ textAlign: 'center', padding: '20px' }}>
                                 <p>Загружаем еще МФО... ({visibleCount} из {sortedMFOs.length})</p>
-                                {console.log('Lazy loading block - visibleCount:', visibleCount, 'sortedMFOs.length:', sortedMFOs.length)}
                             </div>
                         )}
                     </div>

@@ -10,6 +10,98 @@
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+    padding: 0 8px;
+  }
+  
+  .wizard-button {
+    padding: 14px 20px;
+    font-size: 1em;
+    min-height: 44px; /* Минимальная высота для удобного касания */
+  }
+}
+
+/* Очень маленькие экраны (320px-375px) */
+@media (max-width: 375px) {
+  /* Максимальное сжатие на очень маленьких экранах */
+  body.calculator-open .calculator-button-wrapper {
+    margin-bottom: 4px !important;
+    padding: 4px !important;
+  }
+  
+  body.calculator-open .open-calculator-button {
+    padding: 8px 16px !important;
+    font-size: 0.9em !important;
+  }
+  
+  body.calculator-open .app-container {
+    padding: 4px;
+  }
+  
+  body.calculator-open .app-header {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  body.calculator-open .header-left {
+    gap: 8px;
+  }
+  
+  .toolbar {
+    padding: 0 8px;
+    gap: 10px;
+  }
+  
+  .wizard-button {
+    padding: 14px 18px;
+    font-size: 1em;
+    min-height: 48px;
+  }
+  
+  .filter-panel {
+    padding: 22px 18px;
+    margin-bottom: 22px;
+  }
+  
+  .filter-panel-title {
+    font-size: 1.2em;
+    margin-bottom: 18px;
+  }
+  
+  .loan-calculator-section {
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .loan-calculator-title {
+    font-size: 1.15em;
+    margin-bottom: 16px;
+  }
+  
+  .offer-button {
+    font-size: 0.95em;
+    padding: 16px 22px;
+    margin-top: 20px;
+    min-height: 50px;
+  }
+  
+  .mfo-list {
+    gap: 16px;
+  }
+  
+  .bot-promo-section,
+  .knowledge-base-section {
+    padding: 20px 16px;
+  }
+  
+  .bot-promo-section h3,
+  .knowledge-base-section h3 {
+    font-size: 1.05em;
+  }
+  
+  .bot-promo-section p,
+  .knowledge-base-section p {
+    font-size: 0.88em;
   }
 }
 
@@ -37,6 +129,29 @@
     border: 2px solid #ED713C;
 }
 
+.filter-panel {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 32px 28px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-1);
+  border: 1px solid var(--line);
+  animation: fade-in 0.4s ease;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-panel-title {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 28px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.5em;
+  letter-spacing: -0.3px;
+}
+
 .loan-calculator-section {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 12px;
@@ -55,32 +170,35 @@
 }
 
 .offer-button {
-  background-color: #ED713C;
-  color: white;
+  background: var(--grad-cta);
+  color: #FFFFFF;
   border: none;
-  border-radius: 8px;
-  padding: 12px 30px;
-  font-size: 1.1em;
-  font-weight: bold;
+  border-radius: 14px;
+  padding: 18px 36px;
+  font-size: 1.15em;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 20px;
+  margin-top: 28px;
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   margin-left: auto;
   margin-right: auto;
   display: block;
+  box-shadow: 0 12px 24px rgba(33, 160, 56, 0.25);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .offer-button:hover {
-  background-color: #fff;
-  color: #ED713C;
+  filter: saturate(1.05) brightness(1.02);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(237, 113, 60, 0.4);
+  box-shadow: 0 16px 32px rgba(33, 160, 56, 0.35);
 }
 
 .offer-button:active {
-  transform: translateY(0);
+  transform: translateY(1px);
+  box-shadow: 0 8px 16px rgba(33, 160, 56, 0.2);
 }
 
 .help-wizard-button {
@@ -269,69 +387,134 @@
 @media (max-width: 768px) {
   .mfo-list {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 22px;
+  }
+  
+  .filter-panel {
+    padding: 28px 24px;
+    margin-bottom: 28px;
+  }
+  
+  .filter-panel-title {
+    font-size: 1.35em;
+    margin-bottom: 24px;
   }
   
   .loan-calculator-section {
-    padding: 15px;
+    padding: 18px;
   }
   
   .loan-calculator-title {
-    font-size: 1em;
+    font-size: 1.15em;
   }
   
   .help-wizard-button {
     width: 100%;
-    padding: 10px 16px;
-    font-size: 0.9em;
-    margin-top: 10px;
+    padding: 12px 18px;
+    font-size: 0.95em;
+    margin-top: 12px;
   }
   
   .offer-button {
-    font-size: 1em;
-    padding: 12px 24px;
+    font-size: 1.05em;
+    padding: 16px 28px;
     max-width: 100%;
+    margin-top: 24px;
   }
   
   .bot-promo-section,
   .knowledge-base-section {
-    padding: 20px 15px;
+    padding: 24px 20px;
   }
   
   .bot-promo-section h3,
   .knowledge-base-section h3 {
-    font-size: 1em;
+    font-size: 1.15em;
   }
   
   .bot-promo-section p,
   .knowledge-base-section p {
-    font-size: 0.85em;
+    font-size: 0.95em;
   }
 }
 
 @media (max-width: 480px) {
+  /* Отключаем сложные анимации на мобильных для производительности */
+  .calculator-slide-container {
+    transition: max-height 0.25s ease, opacity 0.2s ease !important;
+  }
+  
+  .calculator-slide-content {
+    animation: none !important;
+  }
+  
+  .open-calculator-button:hover {
+    transform: none !important;
+    box-shadow: 0 4px 15px rgba(237, 113, 60, 0.4) !important;
+  }
+  
+  /* Сжимаем wrapper кнопки на мобильных при открытом калькуляторе */
+  body.calculator-open .calculator-button-wrapper {
+    margin-bottom: 6px !important;
+    padding: 6px !important;
+  }
+  
+  body.calculator-open .open-calculator-button {
+    padding: 10px 20px !important;
+    font-size: 0.95em !important;
+  }
+  
+  .filter-panel {
+    padding: 24px 20px;
+    margin-bottom: 24px;
+    border-radius: var(--r-md);
+  }
+  
+  .filter-panel-title {
+    font-size: 1.25em;
+    margin-bottom: 20px;
+  }
+  
   .loan-calculator-section {
-    padding: 12px;
-    margin-bottom: 20px !important;
+    padding: 16px;
+    margin-bottom: 22px !important;
   }
   
   .loan-calculator-title {
-    font-size: 0.9em;
+    font-size: 1.05em;
   }
   
   .help-wizard-button {
-    padding: 10px 14px;
-    font-size: 0.85em;
+    padding: 12px 16px;
+    font-size: 0.9em;
+    min-height: 48px;
   }
   
   .offer-button {
-    font-size: 0.95em;
-    padding: 12px 20px;
+    font-size: 1em;
+    padding: 16px 24px;
+    margin-top: 22px;
+    min-height: 52px;
   }
   
   .mfo-list {
-    gap: 15px;
-    margin-top: 20px !important;
+    gap: 18px;
+    margin-top: 22px !important;
+  }
+  
+  .bot-promo-section,
+  .knowledge-base-section {
+    padding: 22px 18px;
+  }
+  
+  .bot-promo-section h3,
+  .knowledge-base-section h3 {
+    font-size: 1.1em;
+  }
+  
+  .bot-promo-section p,
+  .knowledge-base-section p {
+    font-size: 0.9em;
   }
 }
 
@@ -439,10 +622,10 @@
   transform: translateY(-20px) scale(0.97);
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              margin-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 0;
   will-change: max-height, opacity, transform;
+  /* Убираем margin-bottom из transition, чтобы избежать скачков */
 }
 
 .calculator-slide-container.calculator-visible {
@@ -450,15 +633,22 @@
   opacity: 1;
   transform: translateY(0) scale(1);
   margin-bottom: 20px;
+  /* margin-bottom применяется мгновенно при открытии, не анимируется при закрытии */
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .calculator-slide-content {
   background: var(--surface);
   border-radius: var(--r-lg);
-  padding: 30px;
+  padding: 32px 28px;
   box-shadow: var(--shadow-1);
   border: 1px solid var(--line);
   transform-origin: top center;
+  box-sizing: border-box;
+  overflow: visible;
+  width: 100%;
 }
 
 .calculator-show-offers-button {
@@ -474,7 +664,7 @@
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 12px 24px rgba(33, 160, 56, 0.25);
-  margin-top: 25px;
+  margin-top: 16px;
 }
 
 .calculator-show-offers-button:hover {
@@ -505,6 +695,17 @@
   transform: scale(0.97);
 }
 
+/* Сжимаем wrapper кнопки при открытом калькуляторе */
+body.calculator-open .calculator-button-wrapper {
+  margin-bottom: 10px !important;
+  padding: 10px !important;
+}
+
+body.calculator-open .open-calculator-button {
+  padding: 12px 24px !important;
+  font-size: 1em !important;
+}
+
 /* Анимация для контента при появлении */
 .calculator-slide-container.calculator-visible .calculator-slide-content {
   animation: slideDownContent 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -526,7 +727,7 @@
 
 @media (max-width: 768px) {
   .calculator-slide-content {
-    padding: 25px;
+    padding: 28px 24px; /* Увеличиваем отступы на планшетах */
   }
   
   .calculator-slide-container.calculator-visible {
@@ -536,12 +737,13 @@
   
   .calculator-slide-container {
     transform: translateY(-15px) scale(0.97);
+    /* margin-bottom не анимируется для предотвращения скачков */
   }
 }
 
 @media (max-width: 480px) {
   .calculator-slide-content {
-    padding: 20px;
+    padding: 24px 20px; /* Увеличиваем отступы на мобильных устройствах */
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1),
                 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -556,18 +758,52 @@
     transform: translateY(-10px) scale(0.98);
     transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Убираем margin-bottom из transition для предотвращения скачков */
   }
   
   .calculator-show-offers-button {
     padding: 14px 20px;
     font-size: 1em;
-    margin-top: 20px;
+    margin-top: 14px;
   }
   
   .open-calculator-button {
     padding: 14px 24px;
     font-size: 1em;
+    min-height: 44px; /* Минимальная высота для удобного касания */
+  }
+}
+
+/* Очень маленькие экраны (320px-375px) */
+@media (max-width: 375px) {
+  .main-content-wrapper {
+    padding: 0 4px !important;
+  }
+  
+  .calculator-button-wrapper {
+    padding: 12px 8px !important;
+  }
+  
+  .calculator-slide-content {
+    padding: 20px 16px; /* Уменьшаем отступы на очень маленьких экранах */
+  }
+  
+  .calculator-show-offers-button {
+    padding: 14px 16px;
+    font-size: 0.95em;
+    min-height: 48px; /* Минимальная высота для удобного касания */
+    margin-top: 12px;
+  }
+  
+  .open-calculator-button {
+    padding: 12px 20px;
+    font-size: 0.95em;
+    min-height: 44px;
+  }
+  
+  .calculator-slide-container.calculator-visible {
+    max-height: 1800px;
+    margin-bottom: 12px;
   }
 } 

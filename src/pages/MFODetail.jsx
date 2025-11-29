@@ -1,10 +1,14 @@
 import React from 'react';
+import vkBridge from '@vkontakte/vk-bridge';
+import { useTracking } from '../contexts/TrackingContext';
 import './MFODetail.css';
 
 const MFODetail = ({ mfo }) => {
     // Временно используем прямую ссылку без VK Bridge для тестирования
     const dynamicLink = mfo.link;
     const linkLoading = false;
+    // Получаем tracking данные для добавления sub4/sub5
+    const { buildUrl } = useTracking();
 
     if (!mfo) {
         return <div>МФО не найдена</div>;
@@ -31,7 +35,7 @@ const MFODetail = ({ mfo }) => {
             <div className="mfo-params">
                 <div className="param-item"><strong>Сумма:</strong> от {mfo.sum_min.toLocaleString()} до {mfo.sum_max.toLocaleString()} ₽</div>
                 <div className="param-item"><strong>Срок:</strong> от {mfo.term_min} до {mfo.term_max} дней</div>
-                <div className="param-item"><strong>Ставка:</strong> {mfo.rate}% в день</div>
+                <div className="param-item"><strong>Ставка:</strong> {mfo.rate} в день</div>
                 <div className="param-item"><strong>Шанс одобрения:</strong> {mfo.approval_chance}%</div>
                 <div className="param-item"><strong>Скорость выплаты:</strong> {Math.round(mfo.payout_speed_hours * 60)} минут</div>
             </div>
@@ -65,11 +69,34 @@ const MFODetail = ({ mfo }) => {
             </div>
 
             <a
-                href={dynamicLink || mfo.link}
+                href={buildUrl(dynamicLink || mfo.link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="apply-button"
                 style={{ opacity: linkLoading ? 0.7 : 1 }}
+                onClick={(e) => {
+                    const link = buildUrl(dynamicLink || mfo.link);
+                    const isMobile = /iPad|iPhone|iPod|Android/.test(navigator.userAgent) || window.innerWidth <= 768;
+                    
+                    if (vkBridge && typeof vkBridge.send === 'function') {
+                        e.preventDefault();
+                        vkBridge.send('VKWebAppOpenURL', { url: link })
+                            .then(() => {
+                                console.log('✅ Ссылка открыта через VK Bridge');
+                            })
+                            .catch(() => {
+                                const opened = window.open(link, '_blank');
+                                if (!opened) {
+                                    window.location.href = link;
+                                }
+                            });
+                    } else if (isMobile) {
+                        // На мобильных устройствах без VK Bridge используем location.href
+                        e.preventDefault();
+                        window.location.href = link;
+                    }
+                    // На десктопе оставляем стандартное поведение ссылки
+                }}
             >
                 {linkLoading ? 'Загрузка ссылки...' : 'Оформить займ'}
             </a>

@@ -37,13 +37,11 @@ const MFOCardWithUTM = ({
     if (isLoading) {
         buttonText = 'Загрузка данных...';
         isButtonDisabled = true;
-    } else if (!isDataReady) {
-        buttonText = 'Ошибка: нет ID';
-        isButtonDisabled = true;
     } else if (!isEligible) {
         buttonText = 'Не подходит по условиям';
         isButtonDisabled = true;
     }
+    // Убрали проверку isDataReady - кнопка работает всегда
 
     // Определяем цвет прогресс-бара и текста шанса одобрения
     const getApprovalColor = (chance) => {
@@ -67,7 +65,12 @@ const MFOCardWithUTM = ({
             <div className="mfo-card-header-new">
                 <div className="mfo-logo-new">
                     {mfo.logo_url ? (
-                        <img src={mfo.logo_url} alt={`${mfo.name} logo`} className="mfo-logo-img-new" />
+                        <img 
+                            src={mfo.logo_url} 
+                            alt={`${mfo.name} logo`} 
+                            className="mfo-logo-img-new"
+                            loading="lazy"
+                        />
                     ) : (
                         <div className="mfo-logo-placeholder-new">{mfo.name.charAt(0)}</div>
                     )}
@@ -76,7 +79,7 @@ const MFOCardWithUTM = ({
                     <h3 className="mfo-name-new">{mfo.name}</h3>
                     {isEligible && approvalChance > 0 && (
                         <div className="mfo-approval-progress">
-                            <span className="approval-label">Шанс одобрения:</span>
+                            <span className="approval-label">Шанс одобрения</span>
                             <div className="approval-progress-bar" data-state={approvalColor === 'success' ? 'high' : approvalColor === 'warning' ? 'mid' : 'low'}>
                                 <i 
                                     className={`approval-progress-fill approval-${approvalColor}`}
@@ -94,7 +97,7 @@ const MFOCardWithUTM = ({
                     <div className="detail-box">
                         <span className="detail-label-new">СУММА</span>
                         <span className="detail-value-new">
-                            {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0} ₽
+                            {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0}{'\u00A0'}₽
                         </span>
                     </div>
                     <div className="detail-box">
@@ -106,7 +109,7 @@ const MFOCardWithUTM = ({
                     <div className="detail-box">
                         <span className="detail-label-new">СТАВКА</span>
                         <span className={`detail-value-new ${isZeroRate ? 'highlight-zero' : ''}`}>
-                            {mfo.rate || 0}% в день
+                            {mfo.rate || 0} в день
                         </span>
                     </div>
                     <div className="detail-box">
@@ -121,15 +124,15 @@ const MFOCardWithUTM = ({
                     <div className="loan-calculation-box-new">
                         <div className="calculation-row">
                             <span className="calc-label-new">Сумма займа:</span>
-                            <span className="calc-value-new">{requestedAmount.toLocaleString()} ₽</span>
+                            <span className="calc-value-new">{requestedAmount.toLocaleString()}{'\u00A0'}₽</span>
                         </div>
                         <div className="calculation-row">
                             <span className="calc-label-new">Переплата:</span>
-                            <span className="calc-value-new">{calculateOverpayment().toLocaleString()} ₽</span>
+                            <span className="calc-value-new">{calculateOverpayment().toLocaleString()}{'\u00A0'}₽</span>
                         </div>
                         <div className="calculation-row calculation-total-new">
                             <span className="calc-label-new">К возврату:</span>
-                            <span className="calc-value-new calc-total-value">{totalAmount.toLocaleString()} ₽</span>
+                            <span className="calc-value-new calc-total-value">{totalAmount.toLocaleString()}{'\u00A0'}₽</span>
                         </div>
                     </div>
                 )}
@@ -137,7 +140,19 @@ const MFOCardWithUTM = ({
                 <button
                     className={`mfo-button-new ${isButtonDisabled ? 'disabled' : ''}`}
                     onClick={onClick}
+                    onTouchStart={(e) => {
+                        // Улучшаем отклик на touch для мобильных устройств
+                        if (!isButtonDisabled) {
+                            e.currentTarget.style.opacity = '0.8';
+                        }
+                    }}
+                    onTouchEnd={(e) => {
+                        if (!isButtonDisabled) {
+                            e.currentTarget.style.opacity = '1';
+                        }
+                    }}
                     disabled={isButtonDisabled}
+                    type="button"
                 >
                     {buttonText}
                 </button>

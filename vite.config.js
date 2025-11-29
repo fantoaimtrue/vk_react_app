@@ -12,7 +12,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://backend:8000', // Указываем имя сервиса Docker
+        target: 'http://localhost:8000', // Для разработки используем localhost
         changeOrigin: true,
         secure: false, // Отключаем проверку SSL-сертификата
       },

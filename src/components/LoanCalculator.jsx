@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import './LoanCalculator.css';
 
-const LoanCalculator = ({ amount, term, onAmountChange, onTermChange, maxAmount = 100000, maxTerm = 90 }) => {
+const LoanCalculator = memo(({ amount, term, onAmountChange, onTermChange, maxAmount = 100000, maxTerm = 90 }) => {
     // Константы для нелинейного скролла
     const AMOUNT_BREAKPOINT = 30000; // До 30к - основная часть
     const AMOUNT_BREAKPOINT_RATIO = 0.7; // 70% слайдера для первых 30к
@@ -199,7 +199,7 @@ const LoanCalculator = ({ amount, term, onAmountChange, onTermChange, maxAmount 
                                 className={`quick-button ${Number(amount) === quickAmount ? 'quick-button-active' : ''}`}
                                 onClick={() => handleQuickAmount(quickAmount)}
                             >
-                                {quickAmount.toLocaleString()} ₽
+                                {quickAmount.toLocaleString()}{'\u00A0'}₽
                             </button>
                         ))}
                     </div>
@@ -301,6 +301,8 @@ const LoanCalculator = ({ amount, term, onAmountChange, onTermChange, maxAmount 
             </div>
         </div>
     );
-};
+});
+
+LoanCalculator.displayName = 'LoanCalculator';
 
 export default LoanCalculator;

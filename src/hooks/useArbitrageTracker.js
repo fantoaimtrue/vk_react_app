@@ -21,12 +21,47 @@ export const useArbitrageTracker = () => {
         setError(null);
 
         try {
-            // Все необходимые параметры уже содержатся в utmParams.
-            // useUTMTracker позаботился об их извлечении из URL и VK Bridge.
-            // VK Реклама использует: campaign_id (кампания), banner_id (баннер), user_id (пользователь)
-            // Также поддерживаем старый формат: ref, ref_source для обратной совместимости
-            const vkRef = utmParams.campaign_id || utmParams.ref || utmParams.vk_ref || utmParams.utm_campaign || '';
-            const vkRefSource = utmParams.banner_id || utmParams.ref_source || utmParams.vk_ref_source || utmParams.utm_content || '';
+            // ИСПРАВЛЕНО: Умная обработка макросов VK по совету эксперта
+            // Проверяем, заменились ли макросы VK или остались как текст
+            const isUnresolvedMacro = (value) => {
+                return value && (value.includes('{{') || value.includes('}}') || value.includes('{campaign_id}') || value.includes('{ad_id}'));
+            };
+            
+            let vkRef = '';
+            let vkRefSource = '';
+            
+            // Логика для ref (campaign_id)
+            if (utmParams.ref && !isUnresolvedMacro(utmParams.ref)) {
+                vkRef = utmParams.ref; // VK реклама заменила макрос
+            } else if (utmParams.utm_campaign) {
+                vkRef = utmParams.utm_campaign; // Стандартный UTM
+            } else if (additionalData.fallback_campaign) {
+                vkRef = additionalData.fallback_campaign; // Fallback для бота
+            } else {
+                vkRef = 'bot_' + Date.now(); // Динамический fallback
+            }
+            
+            // Логика для banner_id/ad_id (ID объявления) - ПРИОРИТЕТ: banner_id, ref_ad, ad_id, vk_ad_id, ref_source
+            // Это ID объявления, который должен передаваться в leads.tech
+            // В рассылке бота используется макрос {banner_id}, который VK заменяет на реальное значение
+            // Формат ссылки: ref_source={banner_id} - VK заменит {banner_id} на реальное значение в ref_source
+            if (utmParams.banner_id && !isUnresolvedMacro(utmParams.banner_id)) {
+                vkRefSource = utmParams.banner_id; // ID объявления из banner_id (если передан напрямую)
+            } else if (utmParams.ref_ad && !isUnresolvedMacro(utmParams.ref_ad)) {
+                vkRefSource = utmParams.ref_ad; // ID объявления из ref_ad
+            } else if (utmParams.ad_id && !isUnresolvedMacro(utmParams.ad_id)) {
+                vkRefSource = utmParams.ad_id; // ID объявления из ad_id
+            } else if (utmParams.vk_ad_id && !isUnresolvedMacro(utmParams.vk_ad_id)) {
+                vkRefSource = utmParams.vk_ad_id; // ID объявления из vk_ad_id
+            } else if (utmParams.ref_source && !isUnresolvedMacro(utmParams.ref_source)) {
+                vkRefSource = utmParams.ref_source; // ID объявления из ref_source (макрос {banner_id} заменен VK на реальное значение)
+            } else if (utmParams.utm_content) {
+                vkRefSource = utmParams.utm_content; // Стандартный UTM
+            } else if (additionalData.fallback_source) {
+                vkRefSource = additionalData.fallback_source; // Fallback для бота
+            } else {
+                vkRefSource = 'auto_message'; // Динамический fallback
+            }
             
             // Подготавливаем данные для leads.tech
             const leadsTechData = {
@@ -52,14 +87,22 @@ export const useArbitrageTracker = () => {
                 vk_platform: utmParams.vk_platform || '',
                 
                 // Арбитражные параметры
-                ref: vkRef || utmParams.ref || '',
-                ref_source: vkRefSource || utmParams.ref_source || '',
+                ref: vkRef || utmParams.ref || utmParams.ref_campaign || '', // id кампании (макрос {ref})
+                ref_source: vkRefSource || utmParams.ref_source || '', // id источника
+                banner_id: utmParams.banner_id || vkRefSource || '', // id объявления (макрос {banner_id})
+                ref_ad: utmParams.ref_ad || utmParams.ad_id || utmParams.vk_ad_id || '', // id объявления
+                ad_id: utmParams.ad_id || utmParams.vk_ad_id || utmParams.ref_ad || utmParams.banner_id || '', // id объявления (дубликат для совместимости)
+                user_id: userData.id || utmParams.user_id || utmParams.utm_term || '', // id пользователя (макрос {user_id})
                 
                 // Арбитражные параметры для leads.tech (формат офферов)
-                // Приоритет: ref → utm_campaign → cid (для VK рекламы ref идёт первым!)
-                s4: vkRef || utmParams.utm_campaign || utmParams.cid || '', // ref (реальное значение)
-                s5: vkRefSource || utmParams.utm_content || utmParams.aid || '', // ref_source (реальное значение)
-                s6: userData.id || utmParams.utm_term || utmParams.user_id || '', // user_id (реальное значение)
+                // ИСПРАВЛЕНО: Используем уже вычисленные vkRef и vkRefSource
+                // s4 = ref (id кампании) - макрос {ref} из рассылки бота
+                // s5 = banner_id (id объявления) - макрос {banner_id} из рассылки бота
+                // s6 = user_id (id пользователя) - макрос {user_id} из рассылки бота
+                // ВАЖНО: Используем ПРЯМОЕ значение из utmParams.ref и utmParams.ref_source, если они есть
+                s4: utmParams.ref || vkRef || utmParams.ref_campaign || utmParams.utm_campaign || '', // campaign_id из ref (макрос {ref}) - ПРИОРИТЕТ прямому ref
+                s5: utmParams.ref_source || utmParams.banner_id || vkRefSource || utmParams.ref_ad || utmParams.ad_id || utmParams.vk_ad_id || utmParams.utm_content || '', // banner_id (макрос {banner_id}) или ref_source - ПРИОРИТЕТ прямому ref_source
+                s6: userData.id || utmParams.user_id || utmParams.utm_term || '', // user_id (макрос {user_id}) - приоритет реальному user_id из VK
                 
                 // Дополнительные арбитражные параметры
                 click_id: utmParams.click_id || utmParams.vk_ad_id || '',
@@ -82,6 +125,29 @@ export const useArbitrageTracker = () => {
                 ...additionalData
             };
 
+            console.log('🔍 [useArbitrageTracker] ВСЕ UTM параметры:', utmParams);
+            console.log('🔍 [useArbitrageTracker] ref:', utmParams.ref, '(макрос {ref} из рассылки)');
+            console.log('🔍 [useArbitrageTracker] ref_source:', utmParams.ref_source, '(макрос {banner_id} из рассылки)');
+            console.log('🔍 [useArbitrageTracker] ref_campaign:', utmParams.ref_campaign);
+            console.log('🔍 [useArbitrageTracker] banner_id:', utmParams.banner_id, '(макрос {banner_id} из рассылки)');
+            console.log('🔍 [useArbitrageTracker] ref_ad:', utmParams.ref_ad);
+            console.log('🔍 [useArbitrageTracker] ad_id:', utmParams.ad_id);
+            console.log('🔍 [useArbitrageTracker] vk_ad_id:', utmParams.vk_ad_id);
+            console.log('🔍 [useArbitrageTracker] user_id:', utmParams.user_id, '(макрос {user_id} из рассылки)');
+            console.log('🔍 [useArbitrageTracker] utm_term:', utmParams.utm_term, '(макрос {user_id} из рассылки)');
+            console.log('🔍 [useArbitrageTracker] vkRef (s4 - id кампании):', vkRef);
+            console.log('🔍 [useArbitrageTracker] vkRefSource (s5 - id объявления):', vkRefSource);
+            console.log('📊 [useArbitrageTracker] Итоговые параметры для leads.tech:');
+            console.log('  - s4 (id кампании):', leadsTechData.s4);
+            console.log('  - s5 (id объявления):', leadsTechData.s5);
+            console.log('  - s6 (user_id):', leadsTechData.s6);
+            console.log('📊 [useArbitrageTracker] Отправляем данные в leads.tech:', leadsTechData);
+            console.log('📊 [useArbitrageTracker] Ключевые параметры для leads.tech:');
+            console.log('  - ref:', leadsTechData.ref);
+            console.log('  - ref_source:', leadsTechData.ref_source);
+            console.log('  - s4:', leadsTechData.s4);
+            console.log('  - s5:', leadsTechData.s5);
+            console.log('  - s6:', leadsTechData.s6);
             logger.info('📊 Отправляем данные в leads.tech:', leadsTechData);
 
             // Отправляем на наш backend, который перенаправит в leads.tech
@@ -101,6 +167,8 @@ export const useArbitrageTracker = () => {
             })
             .then(data => {
                 logger.info('✅ Успешно отправлено в leads.tech:', data);
+                console.log('✅ [useArbitrageTracker] Ответ от backend:', data);
+                console.log('✅ [useArbitrageTracker] URL отправленный в leads.tech:', data.leads_tech_url);
                 setLastSentData(leadsTechData); // Сохраняем последние отправленные данные
             })
             .catch(error => {

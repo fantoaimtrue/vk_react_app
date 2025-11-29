@@ -241,7 +241,7 @@ def mfo_detail(request, pk):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@ratelimit(key='ip', rate='100/h', method='POST')
+@ratelimit(key='ip', rate='1000/h', method='POST')
 def utm_track(request):
     """
     Отслеживание UTM параметров и аналитика
@@ -934,9 +934,10 @@ def users_stats(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@ratelimit(key='ip', rate='100/h', method='POST')
+@ratelimit(key='ip', rate='1000/h', method='POST')
 def send_to_leads_tech(request):
     """
     Отправляет данные пользователя и UTM метки в систему арбитражника leads.tech

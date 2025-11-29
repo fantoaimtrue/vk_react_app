@@ -3,6 +3,9 @@
   border-radius: 8px;
   padding: 0;
   margin-bottom: 0;
+  overflow: visible;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Заголовок калькулятора теперь в модальном окне, этот класс не используется */
@@ -13,51 +16,71 @@
 .calculator-inputs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25px;
+  gap: 30px;
+  width: 100%;
+  padding: 0;
+  overflow: visible;
+  box-sizing: border-box;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: visible;
+  min-width: 0;
 }
 
 .input-group label {
-  font-weight: var(--font-weight-medium);
-  margin-bottom: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
   color: var(--text);
-  font-size: var(--font-size-sm);
-  letter-spacing: var(--letter-spacing-wide);
+  font-size: 0.85em;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+  text-align: center;
+  width: 100%;
 }
 
 .input-with-buttons {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0; /* Убираем лишние отступы */
+  box-sizing: border-box;
 }
 
 .calc-button {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: var(--r-sm);
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   background: var(--surface);
   color: var(--text);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .calc-button:hover:not(:disabled) {
   background: var(--accent);
   border-color: var(--accent);
   color: #FFFFFF;
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.25);
 }
 
 .calc-button:active:not(:disabled) {
@@ -71,13 +94,14 @@
 
 .input-with-buttons input[type="text"] {
   flex: 1;
-  padding: 12px;
-  border: 1px solid var(--line);
+  min-width: 0;
+  padding: 14px 12px;
+  border: 2px solid var(--line);
   background: var(--surface);
   color: var(--text);
   border-radius: var(--r-sm);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-size: 1.2em;
+  font-weight: 700;
   text-align: center;
   transition: all var(--transition-fast);
 }
@@ -86,7 +110,7 @@
   outline: none;
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(33, 160, 56, 0.1);
+  box-shadow: 0 0 0 4px rgba(33, 160, 56, 0.15);
 }
 
 .input-with-buttons input[type="text"]::-webkit-inner-spin-button,
@@ -172,77 +196,163 @@
 @media (max-width: 768px) {
   .calculator-inputs {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 28px;
+    width: 100%;
+    padding: 0 8px;
   }
   
   .calculator-title {
-    font-size: 1.1em;
-    margin-bottom: 15px;
-  }
-  
-  .input-with-buttons {
-    gap: 6px;
-  }
-  
-  .calc-button {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-  
-  .input-with-buttons input[type="text"] {
     font-size: 1.2em;
-    padding: 10px 8px;
-    min-width: 0;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  
+  .input-group {
+    align-items: center;
+    width: 100%;
+    padding: 0;
   }
   
   .input-group label {
-    font-size: 0.75em;
-    margin-bottom: 8px;
+    font-size: 0.85em;
+    margin-bottom: 12px;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .input-with-buttons {
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .input-with-buttons input[type="text"] {
+    font-size: 1.3em;
+    padding: 14px 12px;
+    min-width: 0;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .calc-button {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  
+  .quick-buttons-group {
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .quick-button {
+    min-width: 95px;
+    font-size: 0.95em;
   }
 }
 
 @media (max-width: 480px) {
   .loan-calculator {
     padding: 0;
-    margin-bottom: 15px;
+    margin-bottom: 0;
+    width: 100%;
   }
   
   .calculator-inputs {
-    gap: 12px;
+    grid-template-columns: 1fr;
+    gap: 26px;
+    width: 100%;
+    padding: 0 12px;
   }
   
   .calculator-title {
-    font-size: 0.95em;
-    margin-bottom: 12px;
+    font-size: 1.05em;
+    margin-bottom: 16px;
+    text-align: center;
   }
   
   .calc-button {
-    width: 38px;
-    height: 38px;
-    font-size: 20px;
-    border-width: 1px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 22px;
+    border-width: 2px;
   }
   
   .input-with-buttons {
-    gap: 5px;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
   }
   
   .input-with-buttons input[type="text"] {
-    font-size: 1em;
-    padding: 10px 8px;
+    font-size: 1.15em;
+    padding: 14px 10px;
     min-width: 0;
     flex: 1;
+    text-align: center;
+  }
+  
+  .input-group {
+    align-items: center;
+    width: 100%;
+    padding: 0;
   }
   
   .input-group label {
-    font-size: 0.7em;
-    margin-bottom: 6px;
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    text-align: center;
+    width: 100%;
   }
   
   .input-group input[type="range"] {
-    margin-top: 5px;
+    margin-top: 8px;
+    width: 100%;
+  }
+  
+  .quick-buttons-group {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  
+  .quick-button {
+    padding: 11px 14px;
+    font-size: 0.9em;
+    min-width: 85px;
+    min-height: 44px;
+  }
+  
+  /* Отключаем hover эффекты на touch устройствах */
+  @media (hover: none) {
+    .quick-button:hover {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--text);
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .quick-button-active:hover {
+      background: var(--grad-cta);
+      border-color: var(--accent);
+      color: #FFFFFF;
+      filter: none;
+      box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3);
+    }
+    
+    .calc-button:hover:not(:disabled) {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--text);
+      transform: none;
+      box-shadow: none;
+    }
   }
 }
 
@@ -250,20 +360,25 @@
 .quick-buttons-group {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .quick-button {
   flex: 1;
-  min-width: 80px;
-  padding: 10px 16px;
-  border: 1px solid var(--line);
+  min-width: 90px;
+  min-height: 44px;
+  padding: 12px 18px;
+  border: 2px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--text);
-  font-size: 0.9em;
-  font-weight: 500;
+  font-size: 0.95em;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -271,30 +386,73 @@
 .quick-button:hover {
   background: var(--surface-tint);
   border-color: var(--accent);
-  transform: translateY(-1px);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.15);
 }
 
 .quick-button-active {
   background: var(--grad-cta);
   border-color: var(--accent);
   color: #FFFFFF;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.25);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3);
 }
 
 .quick-button-active:hover {
-  filter: saturate(1.05) brightness(1.02);
+  background: linear-gradient(135deg, #21A038 0%, #21A038 100%);
+  border-color: var(--accent);
+  color: #FFFFFF;
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px rgba(33, 160, 56, 0.4);
 }
 
-@media (max-width: 480px) {
+/* Очень маленькие экраны (320px-375px) */
+@media (max-width: 375px) {
+  .calculator-inputs {
+    gap: 24px;
+    padding: 0 8px;
+  }
+  
   .quick-buttons-group {
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 12px;
   }
   
   .quick-button {
-    padding: 8px 12px;
+    min-width: 75px;
+    padding: 10px 12px;
     font-size: 0.85em;
-    min-width: 70px;
+    min-height: 44px;
+  }
+  
+  .input-group {
+    padding: 0;
+  }
+  
+  .input-group label {
+    font-size: 0.75em;
+    margin-bottom: 10px;
+  }
+  
+  .input-with-buttons {
+    gap: 6px;
+  }
+  
+  .calc-button {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    min-width: 42px;
+    min-height: 42px;
+  }
+  
+  .input-with-buttons input[type="text"] {
+    font-size: 1.1em;
+    padding: 12px 8px;
+  }
+  
+  .input-group input[type="range"] {
+    margin-top: 6px;
   }
 } 

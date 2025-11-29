@@ -23,6 +23,9 @@ class VKUser(models.Model):
     notifications_enabled = models.BooleanField(default=True, verbose_name="Уведомления разрешены")
     notifications_allowed = models.BooleanField(default=False, verbose_name="Пользователь разрешил уведомления в VK")
     
+    # Настройки сообщений от сообщества
+    messages_allowed = models.BooleanField(default=False, verbose_name="Пользователь разрешил сообщения от сообщества")
+    
     # Данные активности
     first_visit = models.DateTimeField(auto_now_add=True, verbose_name="Первый визит")
     last_visit = models.DateTimeField(auto_now=True, verbose_name="Последний визит")
@@ -263,3 +266,244 @@ class UTMTracking(models.Model):
         verbose_name = "UTM Отслеживание"
         verbose_name_plural = "UTM Отслеживание"
         ordering = ['-timestamp']
+
+
+# ============================================
+# НОВАЯ СИСТЕМА РАССЫЛОК (Bot Hunter Style)
+# ============================================
+
+class PushCampaign(models.Model):
+    """
+    Рассылка пуш-уведомлений с расписанием
+    """
+    SCHEDULE_TYPE_CHOICES = [
+        ('once', 'Разовая отправка'),
+        ('daily', 'Ежедневно'),
+        ('weekly', 'Еженедельно'),
+        ('monthly', 'Ежемесячно'),
+        ('custom', 'Произвольное расписание'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('draft', 'Черновик'),
+        ('active', 'Активна'),
+        ('paused', 'Приостановлена'),
+        ('completed', 'Завершена'),
+    ]
+    
+    SEGMENT_CHOICES = [
+        ('all', 'Все пользователи'),
+        ('active', 'Активные (были за последние 7 дней)'),
+        ('inactive', 'Неактивные (не были более 7 дней)'),
+        ('new', 'Новые (зарегистрированы за последние 3 дня)'),
+        ('custom', 'Выборочная сегментация'),
+    ]
+    
+    # Основная информация
+    name = models.CharField(max_length=200, verbose_name="Название рассылки")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    # Статус
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', verbose_name="Статус")
+    
+    # Расписание
+    schedule_type = models.CharField(max_length=20, choices=SCHEDULE_TYPE_CHOICES, default='once', verbose_name="Тип расписания")
+    schedule_time = models.TimeField(null=True, blank=True, verbose_name="Время отправки (для ежедневных)")
+    schedule_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата и время (для разовых)")
+    schedule_days = models.JSONField(default=list, blank=True, help_text="Дни недели для еженедельных (0=Понедельник, 6=Воскресенье)", verbose_name="Дни недели")
+    schedule_day_of_month = models.IntegerField(null=True, blank=True, help_text="День месяца для ежемесячных (1-31)", verbose_name="День месяца")
+    
+    # Настройки таргетинга
+    segment = models.CharField(max_length=20, choices=SEGMENT_CHOICES, default='all', verbose_name="Сегмент")
+    target_users = models.ManyToManyField(VKUser, blank=True, verbose_name="Конкретные пользователи")
+    
+    # Фильтры для custom сегментации
+    filter_city = models.CharField(max_length=100, blank=True, verbose_name="Фильтр по городу")
+    filter_sex = models.IntegerField(null=True, blank=True, verbose_name="Фильтр по полу")
+    filter_utm_source = models.CharField(max_length=200, blank=True, verbose_name="Фильтр по UTM Source")
+    
+    # Лимиты
+    max_sends_per_day = models.IntegerField(null=True, blank=True, help_text="Максимум отправок в день (null = без ограничений)", verbose_name="Лимит отправок в день")
+    total_sends_limit = models.IntegerField(null=True, blank=True, help_text="Общий лимит отправок (null = без ограничений)", verbose_name="Общий лимит")
+    
+    # Даты
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
+    started_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата запуска")
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата завершения")
+    
+    # Статистика
+    total_sent = models.IntegerField(default=0, verbose_name="Всего отправлено")
+    total_delivered = models.IntegerField(default=0, verbose_name="Всего доставлено")
+    total_failed = models.IntegerField(default=0, verbose_name="Всего ошибок")
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_status_display()})"
+    
+    def get_target_users_queryset(self):
+        """Возвращает queryset пользователей для отправки"""
+        from datetime import timedelta
+        
+        if self.segment == 'custom' and self.target_users.exists():
+            queryset = self.target_users.all()
+        else:
+            queryset = VKUser.objects.filter(notifications_enabled=True, notifications_allowed=True)
+        
+        # Применяем сегментацию
+        if self.segment == 'active':
+            queryset = queryset.filter(last_visit__gte=timezone.now() - timedelta(days=7))
+        elif self.segment == 'inactive':
+            queryset = queryset.filter(last_visit__lt=timezone.now() - timedelta(days=7))
+        elif self.segment == 'new':
+            queryset = queryset.filter(first_visit__gte=timezone.now() - timedelta(days=3))
+        
+        # Применяем фильтры
+        if self.filter_city:
+            queryset = queryset.filter(city__icontains=self.filter_city)
+        if self.filter_sex:
+            queryset = queryset.filter(sex=self.filter_sex)
+        if self.filter_utm_source:
+            queryset = queryset.filter(utm_source__icontains=self.filter_utm_source)
+        
+        return queryset
+    
+    def get_next_send_time(self):
+        """Вычисляет следующее время отправки на основе расписания"""
+        from datetime import datetime, timedelta
+        import calendar
+        
+        now = timezone.now()
+        
+        if self.schedule_type == 'once':
+            return self.schedule_date if self.schedule_date and self.schedule_date > now else None
+        
+        elif self.schedule_type == 'daily':
+            if not self.schedule_time:
+                return None
+            # Сегодня в указанное время
+            next_time = now.replace(hour=self.schedule_time.hour, minute=self.schedule_time.minute, second=0, microsecond=0)
+            if next_time <= now:
+                # Если время уже прошло, планируем на завтра
+                next_time += timedelta(days=1)
+            return next_time
+        
+        elif self.schedule_type == 'weekly':
+            if not self.schedule_time or not self.schedule_days:
+                return None
+            # Находим ближайший день недели из schedule_days
+            current_weekday = now.weekday()
+            next_time = None
+            for day in sorted(self.schedule_days):
+                if day > current_weekday:
+                    days_ahead = day - current_weekday
+                    next_time = now + timedelta(days=days_ahead)
+                    break
+            if not next_time:
+                # Если все дни прошли, берем первый день следующей недели
+                next_time = now + timedelta(days=(7 - current_weekday + min(self.schedule_days)))
+            next_time = next_time.replace(hour=self.schedule_time.hour, minute=self.schedule_time.minute, second=0, microsecond=0)
+            return next_time
+        
+        elif self.schedule_type == 'monthly':
+            if not self.schedule_time or not self.schedule_day_of_month:
+                return None
+            # Ближайший день месяца
+            current_day = now.day
+            if current_day < self.schedule_day_of_month:
+                # В этом месяце
+                next_time = now.replace(day=self.schedule_day_of_month, hour=self.schedule_time.hour, minute=self.schedule_time.minute, second=0, microsecond=0)
+            else:
+                # В следующем месяце
+                if now.month == 12:
+                    next_time = now.replace(year=now.year + 1, month=1, day=self.schedule_day_of_month, hour=self.schedule_time.hour, minute=self.schedule_time.minute, second=0, microsecond=0)
+                else:
+                    # Проверяем, есть ли такой день в следующем месяце
+                    next_month = now.month + 1
+                    days_in_month = calendar.monthrange(now.year, next_month)[1]
+                    day = min(self.schedule_day_of_month, days_in_month)
+                    next_time = now.replace(month=next_month, day=day, hour=self.schedule_time.hour, minute=self.schedule_time.minute, second=0, microsecond=0)
+            return next_time
+        
+        return None
+    
+    class Meta:
+        verbose_name = "Рассылка пуш-уведомлений"
+        verbose_name_plural = "Рассылки пуш-уведомлений"
+        ordering = ['-created_at']
+
+
+class PushTemplate(models.Model):
+    """
+    Шаблон пуш-уведомления для рассылки
+    """
+    campaign = models.ForeignKey(PushCampaign, on_delete=models.CASCADE, related_name='templates', verbose_name="Рассылка")
+    
+    title = models.CharField(max_length=100, verbose_name="Заголовок уведомления")
+    message = models.TextField(max_length=500, verbose_name="Текст сообщения")
+    
+    # Ссылка и действие
+    action_url = models.URLField(max_length=500, blank=True, verbose_name="Ссылка при клике")
+    action_type = models.CharField(max_length=50, blank=True, verbose_name="Тип действия")
+    
+    # Порядок отправки (для ротации шаблонов)
+    order = models.IntegerField(default=0, verbose_name="Порядок")
+    
+    # Статистика использования
+    times_used = models.IntegerField(default=0, verbose_name="Использовано раз")
+    
+    # Даты
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    
+    def __str__(self):
+        return f"{self.campaign.name} - {self.title}"
+    
+    class Meta:
+        verbose_name = "Шаблон пуша"
+        verbose_name_plural = "Шаблоны пушей"
+        ordering = ['campaign', 'order', 'id']
+
+
+class SentPush(models.Model):
+    """
+    История отправленных пуш-уведомлений
+    """
+    STATUS_CHOICES = [
+        ('sent', 'Отправлено'),
+        ('delivered', 'Доставлено'),
+        ('failed', 'Ошибка'),
+        ('clicked', 'Клик'),
+    ]
+    
+    # Связи
+    campaign = models.ForeignKey(PushCampaign, on_delete=models.CASCADE, related_name='sent_pushes', null=True, blank=True, verbose_name="Рассылка")
+    template = models.ForeignKey(PushTemplate, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_pushes', verbose_name="Шаблон")
+    user = models.ForeignKey(VKUser, on_delete=models.CASCADE, related_name='sent_pushes', verbose_name="Пользователь")
+    
+    # Данные отправки
+    title = models.CharField(max_length=100, verbose_name="Заголовок")
+    message = models.TextField(verbose_name="Сообщение")
+    action_url = models.CharField(max_length=500, blank=True, verbose_name="Ссылка")
+    
+    # Статус
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name="Статус")
+    error_message = models.TextField(blank=True, verbose_name="Сообщение об ошибке")
+    
+    # Временные метки
+    sent_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата отправки")
+    clicked_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата клика")
+    
+    # VK API response
+    vk_response = models.JSONField(default=dict, blank=True, verbose_name="Ответ VK API")
+    
+    def __str__(self):
+        return f"{self.title} -> {self.user} ({self.get_status_display()})"
+    
+    class Meta:
+        verbose_name = "Отправленный пуш"
+        verbose_name_plural = "Отправленные пуши"
+        ordering = ['-sent_at']
+        indexes = [
+            models.Index(fields=['-sent_at']),
+            models.Index(fields=['campaign', '-sent_at']),
+            models.Index(fields=['user', '-sent_at']),
+        ]
