@@ -1,6 +1,6 @@
-import React from 'react';
 import vkBridge from '@vkontakte/vk-bridge';
-import { useTracking } from '../contexts/TrackingContext';
+import { useTracking } from '../contexts/useTracking';
+import logger from '../utils/logger';
 import './MFODetail.css';
 
 const MFODetail = ({ mfo }) => {
@@ -35,7 +35,7 @@ const MFODetail = ({ mfo }) => {
             <div className="mfo-params">
                 <div className="param-item"><strong>Сумма:</strong> от {mfo.sum_min.toLocaleString()} до {mfo.sum_max.toLocaleString()} ₽</div>
                 <div className="param-item"><strong>Срок:</strong> от {mfo.term_min} до {mfo.term_max} дней</div>
-                <div className="param-item"><strong>Ставка:</strong> {mfo.rate} в день</div>
+                <div className="param-item"><strong>Ставка:</strong> {mfo.rate}%</div>
                 <div className="param-item"><strong>Шанс одобрения:</strong> {mfo.approval_chance}%</div>
                 <div className="param-item"><strong>Скорость выплаты:</strong> {Math.round(mfo.payout_speed_hours * 60)} минут</div>
             </div>
@@ -82,7 +82,7 @@ const MFODetail = ({ mfo }) => {
                         e.preventDefault();
                         vkBridge.send('VKWebAppOpenURL', { url: link })
                             .then(() => {
-                                console.log('✅ Ссылка открыта через VK Bridge');
+                                logger.info('✅ Ссылка открыта через VK Bridge');
                             })
                             .catch(() => {
                                 const opened = window.open(link, '_blank');

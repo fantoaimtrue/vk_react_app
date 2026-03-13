@@ -1,0 +1,214 @@
+/* Адаптивные стили для карточек на всех устройствах */
+
+/* Очень маленькие экраны (до 320px) - одна колонка */
+@media (max-width: 320px) {
+  .mfo-card-new {
+    border-radius: 10px;
+  }
+  
+  .mfo-card-header-new {
+    padding: 6px;
+    gap: 5px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 0.75em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 6px;
+  }
+  
+  .mfo-conditions-button {
+    padding: 7px 10px;
+    font-size: 0.75em;
+  }
+  
+  .detail-box {
+    padding: 6px 8px;
+    min-height: 50px;
+  }
+  
+  .detail-label-new {
+    font-size: 0.5em;
+  }
+  
+  .detail-value-new {
+    font-size: 0.7em;
+  }
+  
+  .mfo-button-new {
+    height: 36px;
+    font-size: 0.7em;
+    padding: 8px 10px;
+  }
+}
+
+/* Маленькие мобильные (321px - 374px) */
+@media (min-width: 321px) and (max-width: 374px) {
+  .mfo-card-header-new {
+    padding: 7px;
+    gap: 6px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 0.8em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 8px;
+  }
+  
+  .detail-box {
+    padding: 7px 9px;
+    min-height: 52px;
+  }
+  
+  .detail-label-new {
+    font-size: 0.55em;
+  }
+  
+  .detail-value-new {
+    font-size: 0.75em;
+  }
+  
+  .mfo-button-new {
+    height: 38px;
+    font-size: 0.75em;
+  }
+}
+
+/* Стандартные мобильные (375px - 479px) */
+@media (min-width: 375px) and (max-width: 479px) {
+  .mfo-card-header-new {
+    padding: 8px;
+    gap: 6px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 0.9em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 10px;
+  }
+  
+  .detail-box {
+    padding: 8px 10px;
+    min-height: 55px;
+  }
+  
+  .mfo-button-new {
+    height: 40px;
+    font-size: 0.8em;
+  }
+}
+
+/* Большие мобильные (480px - 639px) */
+@media (min-width: 480px) and (max-width: 639px) {
+  .mfo-card-header-new {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 1em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 12px;
+  }
+  
+  .detail-box {
+    padding: 10px 12px;
+    min-height: 60px;
+  }
+  
+  .mfo-button-new {
+    height: 44px;
+    font-size: 0.85em;
+  }
+}
+
+/* Планшеты (640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .mfo-card-header-new {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 1.1em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 14px;
+  }
+  
+  .detail-box {
+    padding: 12px 14px;
+    min-height: 65px;
+  }
+  
+  .mfo-button-new {
+    height: 46px;
+    font-size: 0.9em;
+  }
+}
+
+/* Десктопы (768px+) */
+@media (min-width: 768px) {
+  .mfo-card-header-new {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 1.25em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 16px;
+  }
+  
+  .detail-box {
+    padding: 12px 14px;
+    min-height: 70px;
+  }
+  
+  .mfo-button-new {
+    height: 48px;
+    font-size: 0.95em;
+  }
+}
+

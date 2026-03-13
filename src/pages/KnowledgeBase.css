@@ -71,7 +71,7 @@
   transform: translateY(-4px);
   box-shadow: var(--shadow-medium), var(--shadow-colored);
   border-color: var(--border-accent);
-  background: linear-gradient(135deg, rgba(0, 120, 85, 0.1) 0%, rgba(33, 160, 56, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(229, 229, 229, 0.1) 0%, rgba(17, 17, 17, 0.05) 100%);
 }
 
 .article-title {

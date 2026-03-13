@@ -286,9 +286,9 @@ def register_or_update_user(vk_user_data, utm_params=None):
     # Сохраняем UTM параметры (при первом визите или если они изменились)
     if utm_params:
         # Обновляем UTM параметры, если они есть и отличаются от текущих
-        new_utm_source = utm_params.get('utm_source', '')
-        new_utm_campaign = utm_params.get('utm_campaign', '')
-        new_utm_content = utm_params.get('utm_content', '')
+        new_utm_source = str(utm_params.get('utm_source', ''))[:200]
+        new_utm_campaign = str(utm_params.get('utm_campaign', ''))[:200]
+        new_utm_content = str(utm_params.get('utm_content', ''))[:200]
         
         if new_utm_source and new_utm_source != user.utm_source:
             user.utm_source = new_utm_source
@@ -299,6 +299,14 @@ def register_or_update_user(vk_user_data, utm_params=None):
     
     # Сохраняем дополнительные данные
     user.extra_data = vk_user_data
+    
+    # Убеждаемся, что текстовые поля не превышают лимиты
+    user.first_name = str(user.first_name)[:100]
+    user.last_name = str(user.last_name)[:100]
+    user.city = str(user.city)[:100]
+    user.country = str(user.country)[:100]
+    user.bdate = str(user.bdate)[:20]
+    
     user.save()
     
     return user

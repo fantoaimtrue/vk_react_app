@@ -1,4 +1,5 @@
-import React, { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './MFOCard.css';
 
 const MFOCardWithUTM = ({
@@ -8,8 +9,7 @@ const MFOCardWithUTM = ({
     onClick,
     showUTMInfo = false,
     utmParams = {},
-    isLoading = false,
-    isDataReady = false
+    isLoading = false
 }) => {
     const isEligible =
         requestedAmount >= mfo.sum_min &&
@@ -25,13 +25,8 @@ const MFOCardWithUTM = ({
 
     const totalAmount = requestedAmount + calculateOverpayment();
 
-    // Определяем, является ли ставка нулевой или очень низкой
-    const isZeroRate = mfo.rate === 0 || mfo.rate < 0.1;
-    const isFastPayout = mfo.payout_speed_hours && mfo.payout_speed_hours <= 1;
-    const isHighApproval = mfo.approval_chance && mfo.approval_chance >= 95;
-
     // Логика для кнопки
-    let buttonText = 'Получить займ';
+    let buttonText = 'Получить';
     let isButtonDisabled = !isEligible;
 
     if (isLoading) {
@@ -43,16 +38,6 @@ const MFOCardWithUTM = ({
     }
     // Убрали проверку isDataReady - кнопка работает всегда
 
-    // Определяем цвет прогресс-бара и текста шанса одобрения
-    const getApprovalColor = (chance) => {
-        if (chance >= 80) return 'success';
-        if (chance >= 50) return 'warning';
-        return 'low';
-    };
-
-    const approvalColor = mfo.approval_chance ? getApprovalColor(mfo.approval_chance) : 'success';
-    const approvalChance = mfo.approval_chance || 0;
-    
     // Время выдачи от 5 до 8 минут (фиксированное для каждой карточки на основе ID)
     const payoutMinutes = useMemo(() => {
         // Используем ID МФО для генерации стабильного значения от 5 до 8
@@ -60,71 +45,127 @@ const MFOCardWithUTM = ({
         return (idHash % 4) + 5; // Всегда от 5 до 8
     }, [mfo.id]);
 
+    // Лимит от 2 до 15 (фиксированное для каждой карточки на основе ID)
+    const limitValue = useMemo(() => {
+        const idHash = (mfo.id || 0).toString().split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (idHash % 14) + 2; // Всегда от 2 до 15
+    }, [mfo.id]);
+
+    // Логика индикатора лимитов (максимум 15)
+    const batteryConfig = useMemo(() => {
+        if (limitValue > 10) {
+            return { segments: 2, color: '#fcc400' }; // Желтый
+        } else if (limitValue >= 5) {
+            return { segments: 1, color: '#FF8A00' }; // Оранжевый
+        } else {
+            return { segments: 1, color: '#EF4444' }; // Красно-оранжевый
+        }
+    }, [limitValue]);
+
+    // Состояние для показа/скрытия деталей займа
+    const [showDetails, setShowDetails] = useState(false);
+
     return (
         <div className={`mfo-card-new ${isEligible ? '' : 'ineligible'}`}>
+            {/* Изображение на всю ширину карточки */}
+            <div className="mfo-image-container-new">
+                {mfo.logo_url ? (
+                    <img
+                        src={mfo.logo_url}
+                        alt={`${mfo.name} logo`}
+                        className="mfo-image-full-new"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div className="mfo-image-placeholder-new">{mfo.name.charAt(0)}</div>
+                )}
+            </div>
+
+            {/* Информация под изображением */}
             <div className="mfo-card-header-new">
-                <div className="mfo-logo-new">
-                    {mfo.logo_url ? (
-                        <img 
-                            src={mfo.logo_url} 
-                            alt={`${mfo.name} logo`} 
-                            className="mfo-logo-img-new"
-                            loading="lazy"
-                        />
-                    ) : (
-                        <div className="mfo-logo-placeholder-new">{mfo.name.charAt(0)}</div>
-                    )}
-                </div>
                 <div className="mfo-info-new">
-                    <h3 className="mfo-name-new">{mfo.name}</h3>
-                    {isEligible && approvalChance > 0 && (
-                        <div className="mfo-approval-progress">
-                            <span className="approval-label">Шанс одобрения</span>
-                            <div className="approval-progress-bar" data-state={approvalColor === 'success' ? 'high' : approvalColor === 'warning' ? 'mid' : 'low'}>
-                                <i 
-                                    className={`approval-progress-fill approval-${approvalColor}`}
-                                    style={{ width: `${approvalChance}%`, '--p': `${approvalChance}%` }}
-                                ></i>
-                            </div>
-                            <span className={`approval-percent approval-${approvalColor}`}>{approvalChance}%</span>
-                        </div>
-                    )}
+                    <div className="mfo-chance-label">
+                        <span className="chance-text">Шанс</span>
+                        <span className="chance-status">ВЫСОКИЙ</span>
+                    </div>
                 </div>
             </div>
 
             <div className="mfo-card-body-new">
-                <div className="loan-details-grid">
-                    <div className="detail-box">
-                        <span className="detail-label-new">СУММА</span>
-                        <span className="detail-value-new">
-                            {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0}{'\u00A0'}₽
-                        </span>
-                    </div>
-                    <div className="detail-box">
-                        <span className="detail-label-new">СРОК</span>
-                        <span className="detail-value-new">
-                            {mfo.term_min || 0} - {mfo.term_max || 0} дней
-                        </span>
-                    </div>
-                    <div className="detail-box">
-                        <span className="detail-label-new">СТАВКА</span>
-                        <span className={`detail-value-new ${isZeroRate ? 'highlight-zero' : ''}`}>
-                            {mfo.rate || 0} в день
-                        </span>
-                    </div>
-                    <div className="detail-box">
-                        <span className="detail-label-new">ВЫПЛАТА</span>
-                        <span className="detail-value-new highlight-fast">
-                            {payoutMinutes} мин
-                        </span>
-                    </div>
-                </div>
+                <button
+                    className="mfo-conditions-button"
+                    onClick={() => setShowDetails(!showDetails)}
+                    type="button"
+                >
+                    {showDetails ? 'Скрыть условия' : 'Условия'}
+                    <span className={`mfo-conditions-icon ${showDetails ? 'open' : ''}`}>▼</span>
+                </button>
+
+                <AnimatePresence>
+                    {showDetails && (
+                        <motion.div
+                            className="loan-details-grid"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        >
+                            <div className="detail-box">
+                                <span className="detail-label-new">СУММА</span>
+                                <span className="detail-value-new">
+                                    {mfo.sum_min?.toLocaleString() || 0} - {mfo.sum_max?.toLocaleString() || 0}{'\u00A0'}₽
+                                </span>
+                            </div>
+                            <div className="detail-box">
+                                <span className="detail-label-new">СРОК</span>
+                                <span className="detail-value-new">
+                                    {mfo.term_min || 0} - {mfo.term_max || 0}<span className="detail-value-unit-full"> дней</span><span className="detail-value-unit-short"> дн</span>
+                                </span>
+                            </div>
+                            <div className="detail-box">
+                                <span className="detail-label-new">СТАВКА</span>
+                                <span className="detail-value-new highlight-green">
+                                    {mfo.rate || 0}%
+                                </span>
+                            </div>
+                            <div className="detail-box">
+                                <span className="detail-label-new">ВЫПЛАТА</span>
+                                <span className="detail-value-new highlight-green">
+                                    {payoutMinutes} мин
+                                </span>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {isEligible && (
                     <div className="loan-calculation-box-new">
                         <div className="calculation-row">
-                            <span className="calc-label-new">Сумма займа:</span>
+                            <span className="calc-label-new">Сумма:</span>
                             <span className="calc-value-new">{requestedAmount.toLocaleString()}{'\u00A0'}₽</span>
+                        </div>
+                        <div className="calculation-row calculation-limit-row">
+                            <div className="limit-label-container">
+                                <span className="limit-label-text">Свободные</span>
+                                <span className="limit-label-text">лимиты</span>
+                            </div>
+                            <div className="battery-container">
+                                <span className="battery-value">{limitValue}</span>
+                                <div className="battery-outer">
+                                    <div className="battery-body">
+                                        {[1, 2, 3].map((s) => (
+                                            <div
+                                                key={s}
+                                                className="battery-segment"
+                                                style={{
+                                                    backgroundColor: s <= batteryConfig.segments ? batteryConfig.color : 'transparent'
+                                                }}
+                                            ></div>
+                                        ))}
+                                    </div>
+                                    <div className="battery-cap"></div>
+                                </div>
+                            </div>
                         </div>
                         <div className="calculation-row">
                             <span className="calc-label-new">Переплата:</span>

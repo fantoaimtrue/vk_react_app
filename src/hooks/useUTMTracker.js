@@ -92,7 +92,7 @@ export const useUTMTracker = () => {
     let hashString = hashToUse.substring(1); // убираем #
     // Клиент VK может добавлять / в начало хеша при переходе из чатов
     // ИСПРАВЛЕНО: убираем все лишние слеши и знаки вопроса
-    hashString = hashString.replace(/^[\/\?]+/, '');
+    hashString = hashString.replace(/^[/?]+/, '');
     const hashParams = new URLSearchParams(hashString);
 
     logger.debug('🔍 Извлечение UTM параметров:', {
@@ -321,9 +321,12 @@ export const useUTMTracker = () => {
     }
 
     // Удаляем sub1 из utmParams и additionalParams, чтобы он не перезаписывался
-    const { sub1: _, ...utmParamsWithoutSub1 } = utmParams;
-    const { sub1: __, ...additionalParamsWithoutSub1 } = additionalParams;
-    const allParams = { ...utmParamsWithoutSub1, ...additionalParamsWithoutSub1 };
+    const omitProtectedSub1 = (params) =>
+      Object.fromEntries(Object.entries(params).filter(([key]) => key !== 'sub1'));
+    const allParams = {
+      ...omitProtectedSub1(utmParams),
+      ...omitProtectedSub1(additionalParams)
+    };
 
     // Функция для проверки валидности значения
     const isValidValue = (value) => {
@@ -428,7 +431,7 @@ export const useUTMTracker = () => {
 
     // Удаляем параметры, которые содержат пустые значения после замены плейсхолдеров
     // Это нужно, чтобы удалить параметры вида sub2= или sub3=
-    dynamicUrl = dynamicUrl.replace(/[?&](\w+)=&/g, (match, paramName) => {
+    dynamicUrl = dynamicUrl.replace(/[?&](\w+)=&/g, (match) => {
       // Удаляем параметр с пустым значением
       return match.includes('?') ? '?' : '&';
     });

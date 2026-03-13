@@ -1,20 +1,19 @@
-/* Карточка МФО в стиле Sber */
+/* Карточка МФО в стиле Утка Валютка */
 .mfo-card {
   position: relative;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--brand-border-soft);
+  border-radius: var(--brand-radius-lg);
   overflow: hidden;
   transition: all 0.3s ease-in-out;
-  background: var(--surface);
+  background: var(--brand-card-bg);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--brand-shadow-soft);
 }
 
 .mfo-card:hover {
   transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-2), 0 0 0 1px rgba(33, 160, 56, 0.1);
+  box-shadow: var(--shadow-2), 0 0 0 1px rgba(17, 17, 17, 0.1);
 }
 
 /* Неактивная карточка */
@@ -64,7 +63,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ED713C 0%, #FF8A50 100%);
+  background: #fcc400;
   color: white;
   font-size: 28px;
   font-weight: 700;
@@ -233,18 +232,18 @@
   border: none;
   border-radius: 12px;
   background: var(--grad-cta);
-  color: #FFFFFF;
+  color: #333;
   font-size: 0.95em;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 16px rgba(33, 160, 56, 0.2);
+  box-shadow: 0 8px 16px rgba(17, 17, 17, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   /* Улучшаем touch-события для мобильных устройств */
   touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(33, 160, 56, 0.2);
+  -webkit-tap-highlight-color: rgba(17, 17, 17, 0.2);
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -255,9 +254,6 @@
 }
 
 .mfo-button-new:hover:not(.disabled) {
-  filter: saturate(1.05) brightness(1.02);
-  transform: translateY(-1px);
-  box-shadow: 0 16px 32px rgba(33, 160, 56, 0.3);
 }
 
 .mfo-button-new:focus:not(.disabled) {
@@ -267,7 +263,7 @@
 
 .mfo-button-new:active:not(.disabled) {
   transform: translateY(1px);
-  box-shadow: 0 8px 16px rgba(33, 160, 56, 0.2);
+  box-shadow: 0 8px 16px rgba(17, 17, 17, 0.2);
 }
 
 .mfo-button-new.disabled {
@@ -294,20 +290,25 @@
 
 .mfo-card-new {
   position: relative;
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border: 1px solid var(--brand-border-soft);
+  border-radius: var(--brand-radius-lg);
   overflow: hidden;
   transition: all 0.3s ease-in-out;
-  background: var(--surface);
+  background: var(--brand-card-bg);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--brand-shadow-soft);
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .mfo-card-new:hover {
   transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-2), 0 0 0 1px rgba(33, 160, 56, 0.1);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
 }
 
 .mfo-card-new.ineligible {
@@ -321,27 +322,93 @@
   border-color: var(--line);
 }
 
+/* Контейнер изображения на всю ширину */
+.mfo-image-container-new {
+  width: 100%;
+  max-height: 120px;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--brand-border-soft);
+}
+
+.mfo-image-full-new {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  padding: 20px;
+  max-height: 200px;
+}
+
+.mfo-image-placeholder-new {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fcc400;
+  color: white;
+  font-size: 48px;
+  font-weight: 700;
+  padding: 40px;
+}
+
+@media (max-width: 480px) {
+  .mfo-image-container-new {
+    height: 65px;
+  }
+
+  .mfo-image-full-new {
+    padding: 8px;
+    max-height: 60px;
+  }
+  
+  .mfo-image-placeholder-new {
+    min-height: 65px;
+    font-size: 24px;
+    padding: 10px;
+  }
+}
+
 /* Заголовок новой карточки */
 .mfo-card-header-new {
   display: flex;
   align-items: flex-start;
-  padding: 16px;
-  gap: 12px;
-  border-bottom: 1px solid var(--line);
+  padding: 10px;
+  gap: 8px;
+  border-bottom: 1px solid var(--brand-border-soft);
   background: transparent;
 }
 
+@media (max-width: 480px) {
+  .mfo-card-header-new {
+    padding: 6px;
+    gap: 4px;
+  }
+}
+
 .mfo-logo-new {
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 8px;
   background: white;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 480px) {
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+  }
 }
 
 .mfo-logo-img-new {
@@ -357,7 +424,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+  background: #fcc400;
   color: white;
   font-size: 32px;
   font-weight: 700;
@@ -367,17 +434,67 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   min-width: 0;
   overflow: hidden;
+  width: 100%;
+  background: var(--brand-bg-soft);
+  border: 1px solid var(--brand-border-soft);
+  border-radius: var(--brand-radius-md);
+  padding: 12px 14px;
+}
+
+/* Блок "Шанс" и "ВЫСОКИЙ" */
+.mfo-chance-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chance-text {
+  color: #6B7280;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.chance-status {
+  color: #21A038;
+  font-size: 0.9em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 480px) {
+  .mfo-info-new {
+    padding: 8px 10px;
+  }
+  
+  .chance-text {
+    font-size: 0.75em;
+  }
+  
+  .chance-status {
+    font-size: 0.75em;
+  }
 }
 
 .mfo-name-new {
   margin: 0;
-  color: var(--text);
-  font-size: 1.25em;
+  color: var(--brand-text-main);
+  font-size: 1.1em;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.15;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+  .mfo-name-new {
+    font-size: 0.85em;
+    line-height: 1.1;
+  }
 }
 
 /* Прогресс-бар шанса одобрения */
@@ -385,28 +502,71 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
   padding: 0;
-  margin-top: 0;
+  margin-top: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .mfo-approval-progress {
+    gap: 3px;
+    margin-top: 3px;
+  }
 }
 
 .approval-label {
-  color: var(--text);
-  font-size: 0.75em;
+  color: var(--brand-text-main);
+  font-size: 0.6em;
   white-space: nowrap;
   font-weight: 600;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+
+.approval-label-full {
+  display: inline;
+  font-size: .9rem;
+}
+
+.approval-label-short {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .approval-label {
+    font-size: 0.48em;
+  }
+  
+  .approval-label-full {
+    display: none;
+  }
+  
+  .approval-label-short {
+    display: inline;
+  }
 }
 
 .approval-progress-bar {
   width: 100%;
-  height: 8px;
+  height: 10px;
   background: #EDF1F3;
   border-radius: 999px;
   overflow: hidden;
   position: relative;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .approval-progress-bar {
+    height: 4px;
+  }
 }
 
 .approval-progress-fill {
@@ -415,11 +575,11 @@
   width: var(--p, 0%);
   border-radius: 999px;
   transition: width 0.3s ease;
-  background: var(--accent);
+  background: var(--brand-accent);
 }
 
 .approval-progress-fill.approval-success {
-  background: var(--accent);
+  background: var(--brand-accent);
 }
 
 .approval-progress-fill.approval-warning {
@@ -432,17 +592,25 @@
 
 .approval-percent {
   font-weight: 700;
-  font-size: 0.8em;
+  font-size: .9rem;
   white-space: nowrap;
-  color: var(--text);
+  color: var(--brand-text-main);
   flex-shrink: 0;
   text-align: right;
-  min-width: 42px;
+  min-width: 32px;
+}
+
+@media (max-width: 480px) {
+  .approval-percent {
+    font-size: 0.5em;
+    min-width: 24px;
+  }
 }
 
 .approval-percent.approval-success {
-  color: var(--accent);
+  color: var(--brand-accent);
 }
+
 
 .approval-percent.approval-warning {
   color: var(--warn);
@@ -459,58 +627,179 @@
   flex-direction: column;
   gap: 12px;
   background: var(--surface);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .mfo-card-body-new {
+    padding: 10px;
+    gap: 8px;
+  }
+}
+
+/* Кнопка "Условия" */
+.mfo-conditions-button {
+  width: 100%;
+  background: #9CA3AF;
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--brand-radius-md);
+  padding: 8px 14px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-family: var(--font-primary);
+}
+
+.mfo-conditions-button:hover {
+}
+
+.mfo-conditions-button:active {
+  background: #4B5563;
+}
+
+.mfo-conditions-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+  font-size: 0.8em;
+}
+
+.mfo-conditions-icon.open {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 480px) {
+  .mfo-conditions-button {
+    padding: 7px 10px;
+    font-size: 0.75em;
+    margin-bottom: 8px;
+  }
 }
 
 /* Сетка деталей займа */
 .loan-details-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
+  margin-bottom: 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .loan-details-grid {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
 }
 
 .detail-box {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   padding: 12px 14px;
-  background: var(--surface-tint);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  background: var(--brand-bg-soft);
+  border: 1px solid var(--brand-border-soft);
+  border-radius: var(--brand-radius-md);
+  min-height: 60px;
+  justify-content: space-between;
+}
+
+.detail-value-unit-full {
+  display: inline;
+}
+
+.detail-value-unit-short {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .detail-box {
+    padding: 8px 10px;
+    gap: 4px;
+    border-radius: 10px;
+    min-height: 55px;
+  }
+  
+  .detail-value-unit-full {
+    display: none;
+  }
+  
+  .detail-value-unit-short {
+    display: inline;
+  }
 }
 
 .detail-label-new {
-  color: var(--muted);
+  color: var(--brand-text-muted);
   font-size: 0.7em;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
+  margin-bottom: 2px;
 }
 
 .detail-value-new {
-  color: var(--text);
+  color: var(--brand-text-main);
   font-size: 0.95em;
   font-weight: 700;
   line-height: 1.3;
   white-space: nowrap;
+  word-break: break-word;
 }
 
-.detail-value-new.highlight-zero {
-  color: var(--accent);
+@media (max-width: 480px) {
+  .detail-label-new {
+    font-size: 0.6em;
+    letter-spacing: 0.3px;
+    margin-bottom: 3px;
+  }
+  
+  .detail-value-new {
+    font-size: 0.85em;
+    line-height: 1.2;
+    white-space: normal;
+  }
 }
 
-.detail-value-new.highlight-fast {
-  color: var(--accent);
+.detail-value-new.highlight-green {
+  color: #21A038;
 }
 
 /* Расчет займа - новый стиль */
 .loan-calculation-box-new {
-  background: var(--surface-tint);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  background: var(--brand-bg-soft);
+  border: 1px solid var(--brand-border-soft);
+  border-radius: var(--brand-radius-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .loan-calculation-box-new {
+    padding: 8px 10px;
+    gap: 4px;
+    border-radius: 8px;
+  }
 }
 
 .calculation-row {
@@ -533,105 +822,181 @@
 
 .calculation-total-new {
   padding-top: 8px;
-  border-top: 2px solid var(--line);
+  border-top: 2px solid var(--brand-border-soft);
   margin-top: 4px;
 }
 
 .calc-label-new {
-  color: var(--muted);
+  color: var(--brand-text-muted);
   font-size: 0.85em;
   font-weight: 500;
 }
 
 .calc-value-new {
-  color: var(--text);
+  color: var(--brand-text-main);
   font-weight: 700;
   font-size: 0.9em;
 }
 
 .calc-total-value {
-  color: var(--accent);
+  color: #21A038;
   font-weight: 700;
   font-size: 1.05em;
+}
+
+/* Строка со свободными лимитами (стиль батарейки) */
+.calculation-limit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.limit-label-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.limit-label-text {
+  color: var(--brand-text-muted);
+  font-size: 0.85em;
+  line-height: 1.2;
+  font-weight: 500;
+  text-transform: none;
+}
+
+.battery-container {
+  display: flex;
+  align-items: center;
+  background: #F3F4F6;
+  padding: 3px 6px;
+  border-radius: 6px;
+  gap: 6px;
+}
+
+.battery-value {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1F2937;
+  min-width: 20px;
+  text-align: center;
+}
+
+.battery-outer {
+  display: flex;
+  align-items: center;
+}
+
+.battery-body {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: #E5E7EB;
+  border-radius: 6px;
+  height: 20px;
+  width: 42px;
+}
+
+.battery-segment {
+  flex: 1;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 0.3s ease;
+}
+
+.battery-cap {
+  width: 2px;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 0 2px 2px 0;
+  margin-left: 1px;
+}
+
+@media (max-width: 480px) {
+  .battery-body {
+    width: 32px;
+    height: 16px;
+  }
+  
+  .battery-value {
+    font-size: 0.9rem;
+  }
+  
+  .limit-label-text {
+    font-size: 0.7em;
+  }
+
+  .calc-label-new {
+    font-size: 0.7em;
+  }
+  
+  .calc-value-new {
+    font-size: 0.75em;
+  }
+  
+  .calc-total-value {
+    font-size: 0.85em;
+  }
 }
 
 /* Кнопка в новом стиле */
 .mfo-card-new .mfo-button-new {
   margin-top: 0;
-  border-radius: 12px;
+  border-radius: var(--brand-radius-md);
+  background: var(--grad-cta);
+  color: #333;
+  height: 48px;
+  min-height: 40px;
+  width: 100%;
+  font-weight: 800;
 }
 
-/* Адаптация для мобильных */
-@media (max-width: 768px) {
-  .mfo-card {
-    margin-bottom: 15px;
-  }
-  
-  .mfo-card-header {
-    padding: 15px;
-  }
-  
-  .mfo-logo {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .mfo-name {
-    font-size: 1.15em;
-  }
-  
-  .mfo-approval-highlight {
-    padding: 5px 10px;
-  }
-  
-  .approval-text {
-    font-size: 0.8em;
-  }
-  
-  .approval-percent {
-    font-size: 0.95em;
-  }
-  
+.mfo-card-new .mfo-button-new:hover:not(.disabled) {
+}
+
+/* Адаптация для планшетов (640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
   .mfo-card-header-new {
-    padding: 20px;
-    gap: 14px;
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
   }
   
   .mfo-name-new {
-    font-size: 1.3em;
+    font-size: 1em;
   }
   
-  .mfo-approval-progress {
-    gap: 6px;
-    padding: 0;
+  .mfo-card-body-new {
+    padding: 12px;
   }
   
-  .approval-label {
-    font-size: 0.68em;
+  .detail-box {
+    padding: 10px 12px;
+  }
+}
+
+/* Адаптация для мобильных (до 639px) */
+@media (max-width: 639px) {
+  .mfo-card {
+    margin-bottom: 12px;
   }
   
-  .approval-progress-bar {
-    height: 7px;
-    min-width: 40px;
-  }
-  
-  .approval-percent {
-    font-size: 0.75em;
-    min-width: 38px;
+  .mfo-card-header {
+    padding: 12px;
   }
   
   .mfo-card-body {
-    padding: 15px;
+    padding: 12px;
   }
   
   .detail-item {
     padding: 8px;
-  }
-  
-  .mfo-button-new {
-    padding: 10px 16px;
-    font-size: 0.85em;
-    height: 42px;
   }
 }
 
@@ -642,6 +1007,10 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
   }
   
+  .mfo-image-container-new {
+    height: 65px;
+  }
+  
   .mfo-card:hover,
   .mfo-card-new:hover {
     transform: none !important;
@@ -649,155 +1018,189 @@
   }
   
   .mfo-button-new {
-    box-shadow: 0 4px 12px rgba(33, 160, 56, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(17, 17, 17, 0.15) !important;
   }
   
   .mfo-button-new:hover:not(.disabled) {
-    transform: none !important;
-    filter: none !important;
-    box-shadow: 0 4px 12px rgba(33, 160, 56, 0.15) !important;
   }
   
   .mfo-logo-new {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
   }
   
-  .mfo-card-header {
-    padding: 18px;
-    gap: 14px;
-  }
-  
-  .mfo-logo {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-  }
-  
-  .mfo-name {
-    font-size: 1.15em;
-  }
-  
-  .mfo-card-body {
-    padding: 20px;
-    gap: 16px;
-  }
-  
   .mfo-card-body-new {
-    padding: 18px;
-    gap: 14px;
-  }
-  
-  .mfo-card-header-new {
-    padding: 18px;
-    gap: 12px;
-  }
-  
-  .mfo-name-new {
-    font-size: 1.3em;
-  }
-  
-  .mfo-logo-new {
-    width: 56px;
-    height: 56px;
-  }
-  
-  .loan-details-compact {
-    gap: 10px;
-  }
-  
-  .loan-details-grid {
-    gap: 10px;
-  }
-  
-  .detail-item {
-    padding: 12px 10px;
-  }
-  
-  .detail-box {
-    padding: 16px 18px;
-  }
-  
-  .detail-label-new {
-    font-size: 0.75em;
-  }
-  
-  .detail-value-new {
-    font-size: 1em;
-  }
-  
-  .mfo-approval-progress {
-    gap: 5px;
-    padding: 0;
-  }
-  
-  .approval-label {
-    font-size: 0.62em;
-  }
-  
-  .approval-progress-bar {
-    height: 7px;
-    min-width: 35px;
-  }
-  
-  .approval-percent {
-    font-size: 0.72em;
-    min-width: 35px;
-  }
-  
-  .loan-calculation-box-new {
-    padding: 20px 22px;
-    gap: 12px;
-  }
-  
-  .detail-label {
-    font-size: 0.75em;
-  }
-  
-  .detail-value {
-    font-size: 0.9em;
-  }
-  
-  .loan-calculation-box {
-    padding: 12px;
+    padding: 10px;
     gap: 8px;
   }
   
-  .calc-label {
-    font-size: 0.85em;
+  .mfo-card-header-new {
+    padding: 8px;
+    gap: 6px;
   }
   
-  .calc-value {
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
     font-size: 0.9em;
   }
   
-  .calc-label-new {
-    font-size: 0.8em;
+  .detail-box {
+    padding: 8px 10px;
+    min-height: 55px;
   }
   
-  .calc-value-new {
+  .detail-label-new {
+    font-size: 0.6em;
+  }
+  
+  .detail-value-new {
     font-size: 0.85em;
   }
   
-  .calc-total-value {
-    font-size: 1em;
-  }
-  
-  .total-label {
-    font-size: 0.85em;
-  }
-  
-  .total-value {
-    font-size: 0.95em;
+  .loan-calculation-box-new {
+    padding: 8px 10px;
+    gap: 4px;
   }
   
   .mfo-button-new {
-    padding: 10px 14px;
-    font-size: 0.8em;
-    height: 40px;
+    padding: 8px 12px;
+    font-size: 0.75em;
+    height: 36px;
+    min-height: 36px;
   }
 }
 
-/* Очень маленькие экраны (320px-375px) */
+/* Адаптивность для разных размеров экранов */
+
+/* Очень маленькие экраны (до 320px) */
+@media (max-width: 320px) {
+  .mfo-card-new {
+    border-radius: 12px;
+  }
+  
+  .mfo-card-header-new {
+    padding: 6px;
+    gap: 5px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+  }
+  
+  .mfo-name-new {
+    font-size: 0.75em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .mfo-conditions-button {
+    padding: 7px 10px;
+    font-size: 0.75em;
+    margin-bottom: 6px;
+  }
+  
+  .detail-box {
+    padding: 6px 8px;
+    gap: 3px;
+    min-height: 50px;
+  }
+  
+  .detail-label-new {
+    font-size: 0.5em;
+  }
+  
+  .detail-value-new {
+    font-size: 0.7em;
+  }
+  
+  .loan-calculation-box-new {
+    padding: 6px 8px;
+    gap: 3px;
+  }
+  
+  .calc-label-new {
+    font-size: 0.65em;
+  }
+  
+  .calc-value-new {
+    font-size: 0.7em;
+  }
+  
+  .mfo-button-new {
+    padding: 8px 10px;
+    font-size: 0.7em;
+    height: 36px;
+    min-height: 36px;
+  }
+  
+  .mfo-approval-progress {
+    gap: 3px;
+    margin-top: 3px;
+  }
+  
+  .approval-label {
+    font-size: 0.45em;
+  }
+  
+  .approval-progress-bar {
+    height: 4px;
+  }
+  
+  .approval-percent {
+    font-size: 0.5em;
+    min-width: 22px;
+  }
+}
+
+/* Маленькие мобильные (321px - 374px) */
+@media (min-width: 321px) and (max-width: 374px) {
+  .mfo-card-header-new {
+    padding: 7px;
+    gap: 6px;
+  }
+  
+  .mfo-logo-new {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mfo-name-new {
+    font-size: 0.8em;
+  }
+  
+  .mfo-card-body-new {
+    padding: 8px;
+    gap: 6px;
+  }
+  
+  .detail-box {
+    padding: 7px 9px;
+    min-height: 52px;
+  }
+  
+  .detail-label-new {
+    font-size: 0.55em;
+  }
+  
+  .detail-value-new {
+    font-size: 0.75em;
+  }
+  
+  .mfo-button-new {
+    height: 38px;
+    min-height: 38px;
+  }
+}
+
+/* Очень маленькие экраны (320px-375px) - общие стили */
 @media (max-width: 375px) {
   .mfo-card {
     margin-bottom: 14px;
@@ -809,41 +1212,6 @@
     gap: 10px;
   }
   
-  .mfo-card-header-new {
-    padding: 12px;
-    gap: 8px;
-  }
-  
-  .mfo-logo {
-    width: 44px;
-    height: 44px;
-  }
-  
-  .mfo-logo-new {
-    width: 46px;
-    height: 46px;
-  }
-  
-  .mfo-name {
-    font-size: 1em;
-    line-height: 1.15;
-  }
-  
-  .mfo-name-new {
-    font-size: 1.1em;
-    line-height: 1.15;
-  }
-  
-  .mfo-card-body {
-    padding: 12px;
-    gap: 8px;
-  }
-  
-  .mfo-card-body-new {
-    padding: 12px;
-    gap: 8px;
-  }
-  
   .loan-details-grid {
     gap: 6px;
   }
@@ -852,67 +1220,16 @@
     gap: 12px;
   }
   
-  .detail-box {
-    padding: 8px 10px;
-    gap: 3px;
-  }
-  
   .detail-item {
-    padding: 6px 4px;
-  }
-  
-  .detail-label-new {
-    font-size: 0.6em;
-  }
-  
-  .detail-value-new {
-    font-size: 0.8em;
+    padding: 5px 4px;
   }
   
   .loan-calculation-box {
-    padding: 10px;
-    gap: 5px;
-  }
-  
-  .loan-calculation-box-new {
-    padding: 10px 12px;
-    gap: 5px;
-  }
-  
-  .calc-label-new {
-    font-size: 0.75em;
-  }
-  
-  .calc-value-new {
-    font-size: 0.8em;
+    padding: 8px;
+    gap: 4px;
   }
   
   .calc-total-value {
-    font-size: 0.95em;
-  }
-  
-  .mfo-button-new {
-    padding: 9px 12px;
-    font-size: 0.75em;
-    height: 36px;
-  }
-  
-  .mfo-approval-progress {
-    gap: 4px;
-    padding: 0;
-  }
-  
-  .approval-label {
-    font-size: 0.56em;
-  }
-  
-  .approval-progress-bar {
-    height: 6px;
-    min-width: 30px;
-  }
-  
-  .approval-percent {
-    font-size: 0.68em;
-    min-width: 32px;
+    font-size: 0.8em;
   }
 }

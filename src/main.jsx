@@ -2,8 +2,9 @@ import _ from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './app.jsx';
+import logger from './utils/logger';
 
-console.log('--- main.jsx START ---');
+logger.debug('--- main.jsx START ---');
 window._ = _;
 
 // Сохраняем оригинальный hash ДО того, как React начнет рендерить компоненты
@@ -12,7 +13,7 @@ const originalHash = window.location.hash;
 if (originalHash && originalHash !== '#' && originalHash !== '#/') {
   // Сохраняем оригинальный hash в sessionStorage для извлечения параметров
   sessionStorage.setItem('originalHash', originalHash);
-  console.log('💾 [main.jsx] Сохранен оригинальный hash:', originalHash);
+  logger.info('💾 [main.jsx] Сохранен оригинальный hash:', originalHash);
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -20,4 +21,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <App />
     </React.StrictMode>,
 );
-console.log('--- main.jsx END ---');
+logger.debug('--- main.jsx END ---');

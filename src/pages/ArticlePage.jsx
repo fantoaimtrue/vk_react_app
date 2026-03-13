@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ArticleNavigation from '../components/ArticleNavigation';
-import Spinner from '../components/Spinner';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './ArticlePage.css';
 
 const ArticlePage = () => {
@@ -41,7 +41,7 @@ const ArticlePage = () => {
         fetchArticleData();
     }, [articleId]);
 
-    if (loading) return <Spinner />;
+    if (loading) return <LoadingSpinner size="large" text="Загрузка статьи..." />;
     if (error) return <div className="error-message">Ошибка: {error}</div>;
     if (!article) return <div>Статья не найдена.</div>;
 

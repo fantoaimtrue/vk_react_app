@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Breadcrumbs from '../components/Breadcrumbs';
-import Spinner from '../components/Spinner';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { mapDjangoMfo } from '../utils/djangoUtils'; // Импортируем "переводчик"
 import MFODetail from './MFODetail';
 
@@ -39,7 +39,7 @@ const MFODetailWrapper = () => {
         fetchMFO();
     }, [id]);
 
-    if (loading) return <Spinner />;
+    if (loading) return <LoadingSpinner size="large" text="Загрузка данных МФО..." />;
     if (error) return <div className="error-message">Ошибка: {error}</div>;
 
     return (

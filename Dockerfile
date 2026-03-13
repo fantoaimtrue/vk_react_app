@@ -4,11 +4,19 @@ FROM node:18-alpine AS build
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
+# Настраиваем npm для более быстрой установки
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retries 3 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000
+
 # Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm install
+# Устанавливаем зависимости (npm ci быстрее и надежнее для продакшена)
+# Используем --legacy-peer-deps если есть проблемы с зависимостями
+RUN npm ci --legacy-peer-deps --prefer-offline --no-audit --progress=false || \
+    npm install --legacy-peer-deps --prefer-offline --no-audit --progress=false
 
 # Копируем остальные файлы приложения
 COPY . .

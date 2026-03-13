@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Spinner from '../components/Spinner';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './KnowledgeBase.css';
 
 const KnowledgeBase = () => {
@@ -27,7 +27,7 @@ const KnowledgeBase = () => {
         fetchArticles();
     }, []);
 
-    if (loading) return <Spinner />;
+    if (loading) return <LoadingSpinner size="large" text="Загрузка статей..." />;
     if (error) return <div className="error-message">Ошибка: {error}</div>;
 
     return (

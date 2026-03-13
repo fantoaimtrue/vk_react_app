@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import LoadingSpinner from '../components/LoadingSpinner';
 import './StatisticsPage.css';
 
 const StatisticsPage = () => {
@@ -9,7 +10,7 @@ const StatisticsPage = () => {
   const [utmSource, setUtmSource] = useState('');
   const [utmCampaign, setUtmCampaign] = useState('');
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -40,11 +41,11 @@ const StatisticsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [days, utmCampaign, utmSource]);
 
   useEffect(() => {
     fetchStats();
-  }, [days, utmSource, utmCampaign]);
+  }, [fetchStats]);
 
   const formatNumber = (num) => {
     return num?.toLocaleString('ru-RU') || 0;
@@ -120,10 +121,7 @@ const StatisticsPage = () => {
 
         {/* Загрузка */}
         {loading && (
-          <div className="statistics-loading">
-            <div className="loading-spinner"></div>
-            <p>Загрузка статистики...</p>
-          </div>
+          <LoadingSpinner size="large" text="Загрузка статистики..." />
         )}
 
         {/* Ошибка */}
@@ -309,5 +307,4 @@ const StatisticsPage = () => {
 };
 
 export default StatisticsPage;
-
 

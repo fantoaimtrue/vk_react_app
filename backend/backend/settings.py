@@ -53,8 +53,17 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # XFrameOptionsMiddleware отключен, так как настройка выполняется в nginx
+    # для поддержки VK доменов (vk.com, vk.ru) согласно документации
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Для работы за Nginx (чтобы Django понимал, что запрос идет по HTTPS)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Настройка X-Frame-Options для поддержки VK доменов
+# Заголовок управляется через nginx для большей гибкости
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -135,14 +144,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Настройки для CORS: разрешаем доступ с адреса нашего фронтенда
+# Настройки для CORS: разрешаем доступ с адреса нашего фронтенда и VK доменов
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",  # ИСПРАВЛЕНИЕ: Vite dev server на порту 5174
     "http://127.0.0.1:5174",
-    "https://bodyexp.ru",  # Продакшен
-    "https://www.bodyexp.ru",
+    "https://utkaminiapp.ru",  # Продакшен
+    "https://www.utkaminiapp.ru",
+    # VK домены для поддержки мини-приложений
+    "https://vk.com",
+    "https://www.vk.com",
+    "https://vk.ru",
+    "https://www.vk.ru",
+    "https://m.vk.com",
+    "https://m.vk.ru",
 ]
 
 # Разрешаем CORS для поддоменов serveo.net (для VK Tunnel)
@@ -151,8 +167,15 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://bodyexp.ru',
-    'https://www.bodyexp.ru',
+    'https://utkaminiapp.ru',
+    'https://www.utkaminiapp.ru',
+    # VK домены для поддержки мини-приложений
+    'https://vk.com',
+    'https://www.vk.com',
+    'https://vk.ru',
+    'https://www.vk.ru',
+    'https://m.vk.com',
+    'https://m.vk.ru',
 ]
 
 # VK Mini App Settings

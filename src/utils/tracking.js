@@ -74,7 +74,7 @@ export const extractTrackingFromURL = () => {
   
   let hashString = hashToUse.substring(1); // Remove #
   // Remove leading slashes and question marks
-  hashString = hashString.replace(/^[\/\?]+/, '');
+  hashString = hashString.replace(/^[/?]+/, '');
   const hashParams = new URLSearchParams(hashString);
 
   // Keys to extract
@@ -203,4 +203,3 @@ export const buildTrackedUrl = (baseUrl, tracking) => {
     return `${baseUrl}${separator}${params.join('&')}`;
   }
 };
-

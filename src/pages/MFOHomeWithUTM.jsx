@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import LoanCalculator from '../components/LoanCalculator';
 import LoanWizard from '../components/LoanWizard';
 import MFOCardWithUTM from '../components/MFOCardWithUTM';
-import { useTracking } from '../contexts/TrackingContext';
+import { useTracking } from '../contexts/useTracking';
 import { useMFOs } from '../hooks/useMFOs';
 import useUTMTracker from '../hooks/useUTMTracker';
 import useArbitrageTracker from '../hooks/useArbitrageTracker';
 import logger from '../utils/logger';
+import { SkeletonCardList } from '../components/SkeletonCard';
+import LoadingSpinner from '../components/LoadingSpinner';
+import AnimatedCard from '../components/AnimatedCard';
 import './MFOHome.css';
 
 const INITIAL_ITEMS_TO_SHOW = 9;
@@ -19,7 +22,42 @@ const MFOHomeWithUTM = () => {
     const [amount, setAmount] = useState(15000);
     const [term, setTerm] = useState(15);
     const [itemsToShow, setItemsToShow] = useState(INITIAL_ITEMS_TO_SHOW);
-    const [sortPriority, setSortPriority] = useState('approval');
+    const [sortPriority, setSortPriority] = useState('api');
+
+    // Таймер на 10 минут (600 секунд)
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const savedStartTime = sessionStorage.getItem('timerStartTime');
+        const now = Date.now();
+        if (savedStartTime) {
+            const elapsed = Math.floor((now - parseInt(savedStartTime)) / 1000);
+            return Math.max(0, 600 - elapsed);
+        } else {
+            sessionStorage.setItem('timerStartTime', now.toString());
+            return 600;
+        }
+    });
+
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeLeft]);
+
+    const formatTime = useCallback((seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }, []);
 
     // Добавляем/убираем класс на body при открытии/закрытии калькулятора
     useEffect(() => {
@@ -128,33 +166,33 @@ const MFOHomeWithUTM = () => {
 
     const handleMFOClick = useCallback((mfo) => {
         try {
-            console.log('🔵 Клик на МФО:', mfo.name);
+            logger.info('🔵 Клик на МФО:', mfo.name);
 
             // 1. Генерируем ссылку с UTM параметрами
             const link = buildUrl(generateMFOLink(mfo));
-            console.log('🔗 Открываем ссылку:', link);
+            logger.info('🔗 Открываем ссылку:', link);
 
             // 2. Открываем ссылку СРАЗУ (синхронно, без await)
             const win = window.open(link, '_blank');
 
             if (!win) {
                 // Если pop-up заблокирован браузером
-                console.warn('⚠️ Pop-up заблокирован, используем location.href');
+                logger.warn('⚠️ Pop-up заблокирован, используем location.href');
                 window.location.href = link;
             } else {
-                console.log('✅ Ссылка открыта в новой вкладке');
+                logger.info('✅ Ссылка открыта в новой вкладке');
             }
 
             // 3. Отправляем аналитику в фоне (не ждем результата)
             sendAnalytics(mfo, link);
 
         } catch (error) {
-            console.error('❌ Ошибка при клике:', error);
+            logger.error('❌ Ошибка при клике:', error);
             // Fallback: открываем базовую ссылку без UTM
             try {
                 window.open(mfo.link, '_blank');
             } catch (fallbackError) {
-                console.error('❌ Даже fallback не сработал:', fallbackError);
+                logger.error('❌ Даже fallback не сработал:', fallbackError);
             }
         }
     }, [generateMFOLink, buildUrl, sendAnalytics]);
@@ -177,8 +215,10 @@ const MFOHomeWithUTM = () => {
     if (loading && !filteredMfos?.length) {
         return (
             <div className="offers-loading-container">
-                <div className="offers-loading-spinner"></div>
-                <p className="offers-loading-text">Загрузка предложений...</p>
+                <LoadingSpinner size="large" text="Загрузка предложений..." />
+                <div className="mfo-list" style={{ marginTop: '20px' }}>
+                    <SkeletonCardList count={6} />
+                </div>
             </div>
         );
     }
@@ -204,24 +244,39 @@ const MFOHomeWithUTM = () => {
                     onCancel={() => setIsWizardOpen(false)}
                 />
             )}
-            <div style={{ padding: '0 10px', maxWidth: '100%', boxSizing: 'border-box' }} className="main-content-wrapper">
+            <div className="main-content-wrapper">
+                {!isCalculatorOpen && (
+                    <>
+                        {/* Информационный блок с таймером */}
+                        <div className={`timer-info-block ${timeLeft > 0 ? 'timer-active' : 'timer-expired'}`}>
+                            <span className="timer-info-text">
+                                Вам одобрены эти займы. <br />
+                                Свободные лимиты актуальны <span className="timer-countdown">{formatTime(timeLeft)}</span> мин.
+                            </span>
+                        </div>
+
+                        <div className="recommendation-block">
+                            <span className="recommendation-title">Рекомендация</span>
+                            <p className="recommendation-text">Отправьте заявку минимум в 4 компании для 100% получения денег!</p>
+                        </div>
+                    </>
+                )}
+
                 {/* Кнопка для открытия/закрытия калькулятора */}
-                <div style={{ textAlign: 'center', padding: '20px' }} className="calculator-button-wrapper">
+                <div style={{ textAlign: 'center', padding: '10px 20px' }} className="calculator-button-wrapper">
                     <button
                         onClick={() => setIsCalculatorOpen(!isCalculatorOpen)}
                         className={`open-calculator-button ${isCalculatorOpen ? 'calculator-open' : ''}`}
                         style={{
-                            background: isCalculatorOpen
-                                ? 'linear-gradient(135deg, #DC5A2A 0%, #ED713C 100%)'
-                                : 'linear-gradient(135deg, #ED713C 0%, #DC5A2A 100%)',
-                            color: 'white',
+                            background: '#fcc400',
+                            color: '#333',
                             border: 'none',
                             borderRadius: '12px',
-                            padding: '16px 32px',
-                            fontSize: '1.1em',
+                            padding: '12px 24px',
+                            fontSize: '1em',
                             fontWeight: '600',
                             cursor: 'pointer',
-                            boxShadow: '0 4px 15px rgba(237, 113, 60, 0.4)',
+                            boxShadow: '0 4px 15px rgba(252, 196, 0, 0.4)',
                             transition: 'all 0.3s ease',
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -281,28 +336,36 @@ const MFOHomeWithUTM = () => {
                     </div>
                 </div>
 
-                <div className="mfo-list" style={{ marginTop: '20px', scrollMarginTop: '100px' }}>
-                    {filteredMfos && filteredMfos.length > 0 ? (
-                        filteredMfos.slice(0, itemsToShow).map((mfo) => (
-                            <MFOCardWithUTM
-                                key={mfo.id}
-                                mfo={mfo}
-                                requestedAmount={amount}
-                                requestedTerm={term}
-                                onClick={() => handleMFOClick(mfo)}
-                                isLoading={utmLoading}
-                                isDataReady={isUserDataReady || !!utmParams.utm_term}
-                            />
-                        ))
-                    ) : (
-                        <div style={{ padding: '40px', textAlign: 'center' }}>
-                            <h3>Предложения не найдены</h3>
-                            <p>Попробуйте изменить параметры займа или сбросить фильтры.</p>
-                            <button onClick={() => { setAmount(15000); setTerm(15); fetchMfos(); }} className="retry-button" style={{ marginTop: '20px' }}>
-                                Сбросить фильтры
-                            </button>
-                        </div>
-                    )}
+                <div className="mfo-list" style={{ marginTop: '10px', scrollMarginTop: '100px' }}>
+                    <AnimatePresence mode="popLayout">
+                        {filteredMfos && filteredMfos.length > 0 ? (
+                            filteredMfos.slice(0, itemsToShow).map((mfo, index) => (
+                                <AnimatedCard key={mfo.id} index={index}>
+                                    <MFOCardWithUTM
+                                        mfo={mfo}
+                                        requestedAmount={amount}
+                                        requestedTerm={term}
+                                        onClick={() => handleMFOClick(mfo)}
+                                        isLoading={utmLoading}
+                                        isDataReady={isUserDataReady || !!utmParams.utm_term}
+                                    />
+                                </AnimatedCard>
+                            ))
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                style={{ padding: '40px', textAlign: 'center', gridColumn: '1 / -1' }}
+                            >
+                                <h3>Предложения не найдены</h3>
+                                <p>Попробуйте изменить параметры займа или сбросить фильтры.</p>
+                                <button onClick={() => { setAmount(15000); setTerm(15); fetchMfos(); }} className="retry-button" style={{ marginTop: '20px' }}>
+                                    Сбросить фильтры
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {itemsToShow < filteredMfos.length && (

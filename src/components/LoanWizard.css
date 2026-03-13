@@ -100,8 +100,8 @@
 .wizard-option:hover {
   border-color: var(--border-accent);
   transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(33, 160, 56, 0.1) 0%, rgba(161, 217, 0, 0.05) 100%);
-  box-shadow: var(--shadow-medium), 0 0 20px rgba(33, 160, 56, 0.2);
+  background: linear-gradient(135deg, rgba(229, 229, 229, 0.1) 0%, rgba(211, 211, 211, 0.05) 100%);
+  box-shadow: var(--shadow-medium), 0 0 20px rgba(17, 17, 17, 0.2);
 }
 
 .wizard-option .icon {

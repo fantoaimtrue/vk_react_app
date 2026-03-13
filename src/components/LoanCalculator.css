@@ -76,11 +76,6 @@
 }
 
 .calc-button:hover:not(:disabled) {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #FFFFFF;
-  transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.25);
 }
 
 .calc-button:active:not(:disabled) {
@@ -110,7 +105,7 @@
   outline: none;
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(33, 160, 56, 0.15);
+  box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.15);
 }
 
 .input-with-buttons input[type="text"]::-webkit-inner-spin-button,
@@ -154,12 +149,12 @@
   cursor: pointer;
   margin-top: -9px; /* Vertically center the thumb */
   border: 3px solid var(--surface);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(33, 160, 56, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(17, 17, 17, 0.2);
   transition: all var(--transition-fast);
 }
 .input-group input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3), 0 0 0 1px var(--accent);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.3), 0 0 0 1px var(--accent);
 }
 
 /* Track styles for Firefox */
@@ -184,12 +179,12 @@
   background: var(--accent);
   cursor: pointer;
   border: 3px solid var(--surface);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(33, 160, 56, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(17, 17, 17, 0.2);
   transition: all var(--transition-fast);
 }
 .input-group input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3), 0 0 0 1px var(--accent);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.3), 0 0 0 1px var(--accent);
 }
 
 
@@ -343,7 +338,7 @@
       border-color: var(--accent);
       color: #FFFFFF;
       filter: none;
-      box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3);
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.3);
     }
     
     .calc-button:hover:not(:disabled) {
@@ -384,11 +379,6 @@
 }
 
 .quick-button:hover {
-  background: var(--surface-tint);
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.15);
 }
 
 .quick-button-active {
@@ -396,15 +386,10 @@
   border-color: var(--accent);
   color: #FFFFFF;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(33, 160, 56, 0.3);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.3);
 }
 
 .quick-button-active:hover {
-  background: linear-gradient(135deg, #21A038 0%, #21A038 100%);
-  border-color: var(--accent);
-  color: #FFFFFF;
-  filter: brightness(1.1);
-  box-shadow: 0 6px 16px rgba(33, 160, 56, 0.4);
 }
 
 /* Очень маленькие экраны (320px-375px) */

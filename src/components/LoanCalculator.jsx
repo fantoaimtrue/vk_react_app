@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import './LoanCalculator.css';
 
 const LoanCalculator = memo(({ amount, term, onAmountChange, onTermChange, maxAmount = 100000, maxTerm = 90 }) => {

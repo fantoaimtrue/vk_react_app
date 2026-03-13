@@ -1,0 +1,387 @@
+.app-header {
+  padding: 20px;
+  /* Добавляем отступы для безопасной зоны iOS */
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-left: max(20px, env(safe-area-inset-left));
+  border-radius: 8px;
+  border-bottom: 1px solid var(--brand-border-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  gap: 20px;
+  flex-wrap: wrap;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.header-logo {
+  height: 60px;
+  width: auto;
+  border-radius: 8px;
+}
+
+.header-logo-duck {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.header-logo-svg-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+
+.header-title {
+  margin: 0;
+  color: var(--brand-text-main);
+  font-size: 1.8em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-slogan {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--brand-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+.header-help-button,
+.header-bot-button {
+  color: white;
+  border: none;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-help-button {
+  background-color: #fcc400;
+  box-shadow: 0 2px 8px rgba(252, 196, 0, 0.3);
+  color: #333333;
+}
+
+.header-help-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.header-bot-button {
+  background-color: #0077FF;
+  box-shadow: 0 2px 8px rgba(0, 119, 255, 0.3);
+  color: #FFFFFF;
+}
+
+.header-bot-button .vk-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.promo-badge-header {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 4px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  animation: promoGlow 2s infinite alternate;
+  letter-spacing: 0.5px;
+}
+
+@keyframes promoGlow {
+  0% {
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  }
+
+  100% {
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.6);
+  }
+}
+
+/* Адаптивность хедера */
+@media (max-width: 640px) {
+  .app-header {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .header-left {
+    gap: 10px;
+  }
+
+  .header-logo-duck {
+    width: 50px;
+    height: 50px;
+  }
+
+  .header-title {
+    font-size: 1.4em;
+  }
+
+  .header-slogan {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 10px;
+    gap: 8px;
+    backdrop-filter: none !important;
+    transition: padding 0.2s ease !important;
+  }
+
+  .header-left {
+    gap: 8px;
+  }
+
+  .header-logo-duck {
+    width: 45px;
+    height: 45px;
+  }
+
+  .header-title {
+    font-size: 1.2em;
+  }
+
+  .header-slogan {
+    font-size: 0.8em;
+  }
+
+  .header-help-button,
+  .header-bot-button {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+  }
+
+  .header-help-button svg,
+  .header-bot-button .vk-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 375px) {
+  .app-header {
+    padding: 8px;
+    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    flex: 0 1 auto;
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .header-logo-duck {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-title {
+    font-size: 1.1em;
+    line-height: 1.2;
+  }
+
+  .header-slogan {
+    font-size: 0.7em;
+    line-height: 1.2;
+  }
+
+  .header-brand {
+    gap: 2px;
+  }
+
+  .header-right {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .header-help-button,
+  .header-bot-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-help-button svg,
+  .header-bot-button .vk-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 320px) {
+  .app-header {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .header-left {
+    gap: 4px;
+  }
+
+  .header-logo-duck {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-title {
+    font-size: 0.95em;
+    line-height: 1.1;
+  }
+
+  .header-slogan {
+    font-size: 0.6em;
+    line-height: 1.1;
+  }
+
+  .header-brand {
+    gap: 1px;
+  }
+
+  .header-right {
+    gap: 4px;
+  }
+
+  .header-help-button,
+  .header-bot-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-help-button svg,
+  .header-bot-button .vk-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Сжатая шапка при открытом калькуляторе */
+body.calculator-open .app-header {
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  body.calculator-open .app-header {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  body.calculator-open .header-logo {
+    height: 35px;
+  }
+
+  body.calculator-open .header-title {
+    font-size: 1.1em;
+  }
+
+  body.calculator-open .header-slogan {
+    font-size: 0.75em;
+  }
+
+  body.calculator-open .header-help-button,
+  body.calculator-open .header-bot-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  body.calculator-open .promo-badge-header {
+    display: none;
+  }
+}
+
+@media (max-width: 375px) {
+  body.calculator-open .app-header {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  body.calculator-open .header-logo {
+    height: 32px;
+  }
+
+  body.calculator-open .header-title {
+    font-size: 1em;
+  }
+
+  body.calculator-open .header-slogan {
+    display: none;
+  }
+
+  body.calculator-open .header-help-button,
+  body.calculator-open .header-bot-button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+
+
+
+

@@ -507,3 +507,21 @@ class SentPush(models.Model):
             models.Index(fields=['campaign', '-sent_at']),
             models.Index(fields=['user', '-sent_at']),
         ]
+
+
+class GlobalSettings(models.Model):
+    """
+    Глобальные настройки приложения
+    """
+    external_api_url = models.URLField(
+        max_length=500, 
+        default="https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list&utm_source=vk_mini_app",
+        verbose_name="URL внешнего API"
+    )
+    
+    def __str__(self):
+        return "Глобальные настройки"
+
+    class Meta:
+        verbose_name = "Глобальные настройки"
+        verbose_name_plural = "Глобальные настройки"

@@ -66,7 +66,6 @@ export const useArbitrageTracker = () => {
             // Подготавливаем данные для leads.tech
             const leadsTechData = {
                 // Основные данные пользователя
-                user_id: userData.id,
                 first_name: userData.first_name,
                 last_name: userData.last_name,
                 email: userData.email || '',
@@ -125,62 +124,58 @@ export const useArbitrageTracker = () => {
                 ...additionalData
             };
 
-            console.log('🔍 [useArbitrageTracker] ВСЕ UTM параметры:', utmParams);
-            console.log('🔍 [useArbitrageTracker] ref:', utmParams.ref, '(макрос {ref} из рассылки)');
-            console.log('🔍 [useArbitrageTracker] ref_source:', utmParams.ref_source, '(макрос {banner_id} из рассылки)');
-            console.log('🔍 [useArbitrageTracker] ref_campaign:', utmParams.ref_campaign);
-            console.log('🔍 [useArbitrageTracker] banner_id:', utmParams.banner_id, '(макрос {banner_id} из рассылки)');
-            console.log('🔍 [useArbitrageTracker] ref_ad:', utmParams.ref_ad);
-            console.log('🔍 [useArbitrageTracker] ad_id:', utmParams.ad_id);
-            console.log('🔍 [useArbitrageTracker] vk_ad_id:', utmParams.vk_ad_id);
-            console.log('🔍 [useArbitrageTracker] user_id:', utmParams.user_id, '(макрос {user_id} из рассылки)');
-            console.log('🔍 [useArbitrageTracker] utm_term:', utmParams.utm_term, '(макрос {user_id} из рассылки)');
-            console.log('🔍 [useArbitrageTracker] vkRef (s4 - id кампании):', vkRef);
-            console.log('🔍 [useArbitrageTracker] vkRefSource (s5 - id объявления):', vkRefSource);
-            console.log('📊 [useArbitrageTracker] Итоговые параметры для leads.tech:');
-            console.log('  - s4 (id кампании):', leadsTechData.s4);
-            console.log('  - s5 (id объявления):', leadsTechData.s5);
-            console.log('  - s6 (user_id):', leadsTechData.s6);
-            console.log('📊 [useArbitrageTracker] Отправляем данные в leads.tech:', leadsTechData);
-            console.log('📊 [useArbitrageTracker] Ключевые параметры для leads.tech:');
-            console.log('  - ref:', leadsTechData.ref);
-            console.log('  - ref_source:', leadsTechData.ref_source);
-            console.log('  - s4:', leadsTechData.s4);
-            console.log('  - s5:', leadsTechData.s5);
-            console.log('  - s6:', leadsTechData.s6);
+            logger.debug('🔍 [useArbitrageTracker] ВСЕ UTM параметры:', utmParams);
+            logger.debug('🔍 [useArbitrageTracker] ref:', utmParams.ref, '(макрос {ref} из рассылки)');
+            logger.debug('🔍 [useArbitrageTracker] ref_source:', utmParams.ref_source, '(макрос {banner_id} из рассылки)');
+            logger.debug('🔍 [useArbitrageTracker] ref_campaign:', utmParams.ref_campaign);
+            logger.debug('🔍 [useArbitrageTracker] banner_id:', utmParams.banner_id, '(макрос {banner_id} из рассылки)');
+            logger.debug('🔍 [useArbitrageTracker] ref_ad:', utmParams.ref_ad);
+            logger.debug('🔍 [useArbitrageTracker] ad_id:', utmParams.ad_id);
+            logger.debug('🔍 [useArbitrageTracker] vk_ad_id:', utmParams.vk_ad_id);
+            logger.debug('🔍 [useArbitrageTracker] user_id:', utmParams.user_id, '(макрос {user_id} из рассылки)');
+            logger.debug('🔍 [useArbitrageTracker] utm_term:', utmParams.utm_term, '(макрос {user_id} из рассылки)');
+            logger.debug('🔍 [useArbitrageTracker] vkRef (s4 - id кампании):', vkRef);
+            logger.debug('🔍 [useArbitrageTracker] vkRefSource (s5 - id объявления):', vkRefSource);
+            logger.info('📊 [useArbitrageTracker] Итоговые параметры для leads.tech:');
+            logger.info('  - s4 (id кампании):', leadsTechData.s4);
+            logger.info('  - s5 (id объявления):', leadsTechData.s5);
+            logger.info('  - s6 (user_id):', leadsTechData.s6);
+            logger.info('📊 [useArbitrageTracker] Отправляем данные в leads.tech:', leadsTechData);
+            logger.info('📊 [useArbitrageTracker] Ключевые параметры для leads.tech:');
+            logger.info('  - ref:', leadsTechData.ref);
+            logger.info('  - ref_source:', leadsTechData.ref_source);
+            logger.info('  - s4:', leadsTechData.s4);
+            logger.info('  - s5:', leadsTechData.s5);
+            logger.info('  - s6:', leadsTechData.s6);
             logger.info('📊 Отправляем данные в leads.tech:', leadsTechData);
 
             // Отправляем на наш backend, который перенаправит в leads.tech
-            // Используем .catch, чтобы не блокировать основной поток
-            fetch('/api/arbitrage/send-to-leads-tech/', {
+            // Теперь ждём ответ и пробрасываем ошибку, чтобы увидели проблему в Promise.allSettled
+            const response = await fetch('/api/arbitrage/send-to-leads-tech/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(leadsTechData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                logger.info('✅ Успешно отправлено в leads.tech:', data);
-                console.log('✅ [useArbitrageTracker] Ответ от backend:', data);
-                console.log('✅ [useArbitrageTracker] URL отправленный в leads.tech:', data.leads_tech_url);
-                setLastSentData(leadsTechData); // Сохраняем последние отправленные данные
-            })
-            .catch(error => {
-                logger.error('❌ Ошибка отправки в leads.tech:', error);
-                // Эта ошибка не должна блокировать работу приложения,
-                // поэтому мы не меняем состояние error
             });
+
+            if (!response.ok) {
+                const body = await response.text();
+                throw new Error(`leads.tech proxy failed: ${response.status} ${body.slice(0, 300)}`);
+            }
+
+            const data = await response.json();
+            logger.info('✅ Успешно отправлено в leads.tech:', data);
+            logger.info('✅ [useArbitrageTracker] Ответ от backend:', data);
+            logger.info('✅ [useArbitrageTracker] URL отправленный в leads.tech:', data.leads_tech_url);
+            setLastSentData(leadsTechData); // Сохраняем последние отправленные данные
+            return data;
 
         } catch (error) {
             logger.error('❌ Ошибка отправки в leads.tech:', error);
             setError(error.message);
-            return null;
+            // Пробрасываем, чтобы вызов через Promise.allSettled увидел отказ
+            throw error;
         } finally {
             setIsLoading(false);
         }

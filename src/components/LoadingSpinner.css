@@ -1,0 +1,44 @@
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-circle {
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--brand-border-soft);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.loading-text {
+  color: var(--brand-text-muted);
+  font-size: 0.9em;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Варианты размеров */
+.loading-spinner-container.small {
+  padding: 20px;
+  min-height: 100px;
+}
+
+.loading-spinner-container.large {
+  padding: 60px 20px;
+  min-height: 300px;
+}
+

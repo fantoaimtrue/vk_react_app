@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    mfo_list, mfo_detail, utm_track, utm_stats, offers_list, upload_mfo_excel, mfo_template,
+    mfo_list, mfo_list_from_db, mfo_detail, utm_track, utm_stats, offers_list, upload_mfo_excel, mfo_template,
     user_register, user_allow_notifications, user_allow_messages, user_status, push_click_track, users_stats,
     send_to_leads_tech, track_session
 )
@@ -9,6 +9,7 @@ from .views import (
 urlpatterns = [
     # МФО endpoints
     path('mfos/', mfo_list, name='mfo-list'),
+    path('mfos/from-db/', mfo_list_from_db, name='mfo-list-from-db'),  # Для разработки: только из БД
     path('mfos/<int:pk>/', mfo_detail, name='mfo-detail'),
     
     # Загрузка МФО из Excel

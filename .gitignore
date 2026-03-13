@@ -1,20 +1,28 @@
 # Dependencies
 /node_modules
 /backend/venv
+/backend/.venv/
 /backend/__pycache__
+**/__pycache__/
+*.py[cod]
+*$py.class
 
 # Build artifacts
 /dist
 /build
+*.egg-info/
 
 # Environment variables
 .env
 *.env.local
+.env.*.local
+.env.*.backup
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
 # OS-generated files
 .DS_Store
@@ -28,3 +36,26 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Docker
+.dockerignore
+
+# Database
+*.db
+*.sqlite3
+*.sqlite3.backup*
+/data_backup.json
+
+# Static files (collected)
+/backend/staticfiles/
+/backend/media/
+
+# SSL certificates
+/data/certbot/
+/ssl/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup

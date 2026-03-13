@@ -1,0 +1,36 @@
+/* Дизайн-токены бренда "Утка Валютка" */
+
+:root {
+  /* Основные цвета бренда */
+  --brand-bg: #E5E5E5;           /* основной светло-серый фон */
+  --brand-bg-soft: #F5F5F5;      /* мягкий фон секций/модалок */
+  --brand-primary: #111111;      /* основной текст и кнопки */
+  --brand-accent: #fcc400;       /* акцентные элементы, иконки */
+  --brand-card-bg: #FFFFFF;      /* фон карточек офферов */
+  --brand-border-soft: #D3D3D3;  /* мягкие бордеры */
+  --brand-text-main: #111111;
+  --brand-text-muted: #4B5563;
+  
+  /* Радиусы скругления */
+  --brand-radius-lg: 20px;
+  --brand-radius-md: 14px;
+  --brand-radius-pill: 9999px;
+  
+  /* Тени */
+  --brand-shadow-soft: 0 14px 40px rgba(0,0,0,0.14);
+  
+  /* Градиенты */
+  --brand-hero-gradient: radial-gradient(circle at top, #F0F0F0 0%, var(--brand-bg) 50%, #D3D3D3 100%);
+}
+
+/* Основной фон приложения */
+body {
+  background: var(--brand-bg);
+  color: var(--brand-text-main);
+}
+
+.main-page {
+  min-height: 100vh;
+  background: var(--brand-hero-gradient);
+}
+

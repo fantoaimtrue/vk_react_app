@@ -4,7 +4,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import MFO, Offer, VKUser, PushNotification, PushLog, PushCampaign, PushTemplate, SentPush
+from .models import MFO, Offer, VKUser, PushNotification, PushLog, PushCampaign, PushTemplate, SentPush, GlobalSettings
 
 # Убираем регистрацию Offer из админки
 # @admin.register(Offer)
@@ -448,3 +448,19 @@ class SentPushAdmin(admin.ModelAdmin):
     
     def has_change_permission(self, request, obj=None):
         return False  # Отправленные пуши нельзя изменять
+
+
+@admin.register(GlobalSettings)
+class GlobalSettingsAdmin(admin.ModelAdmin):
+    list_display = ('external_api_url',)
+    
+    def has_add_permission(self, request):
+        # Разрешаем создать только один объект
+        if self.model.objects.exists():
+            return False
+        return super().has_add_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        # Запрещаем удалять настройки
+        return False
+

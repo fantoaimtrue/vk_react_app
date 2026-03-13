@@ -32,8 +32,8 @@
 }
 
 .nav-link:hover {
-  border-color: #ED713C;
-  background-color: rgba(237, 113, 60, 0.1);
+  border-color: #fcc400;
+  background-color: rgba(252, 196, 0, 0.1);
 }
 
 .nav-link.next {
@@ -43,7 +43,7 @@
 
 .nav-link .arrow {
   font-size: 2em;
-  color: #ED713C;
+  color: #fcc400;
 }
 
 .nav-link .text-content {

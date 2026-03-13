@@ -21,7 +21,7 @@
 }
 
 .btn:focus {
-  box-shadow: var(--shadow-medium), 0 0 0 3px rgba(161, 217, 0, 0.3);
+  box-shadow: var(--shadow-medium), 0 0 0 3px rgba(252, 196, 0, 0.3);
 }
 
 .btn:disabled {
@@ -52,13 +52,10 @@
 /* Варианты кнопок */
 .btn-primary {
   background: var(--sber-main-gradient);
-  color: var(--text-primary);
+  color: #333;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(90deg, #21A038 0%, #A1D900 100%);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium), 0 0 20px rgba(33, 160, 56, 0.4);
 }
 
 .btn-secondary {
@@ -68,10 +65,6 @@
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--secondary-color);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-medium);
 }
 
 .btn-accent {
@@ -80,20 +73,14 @@
 }
 
 .btn-accent:hover:not(:disabled) {
-  background: #8BC34A;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-medium), 0 0 15px rgba(161, 217, 0, 0.4);
 }
 
 .btn-warning {
   background: var(--warning-color);
-  color: var(--text-primary);
+  color: #333;
 }
 
 .btn-warning:hover:not(:disabled) {
-  background: #DC5A2A;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-medium), 0 0 15px rgba(237, 113, 60, 0.4);
 }
 
 .btn-ghost {
@@ -103,9 +90,6 @@
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: var(--hover-overlay);
-  border-color: var(--border-accent);
-  transform: translateY(-1px);
 }
 
 /* Карточки */
@@ -176,7 +160,7 @@
 .input:focus {
   outline: none;
   border-color: var(--border-accent);
-  box-shadow: 0 0 0 3px rgba(33, 160, 56, 0.1);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.1);
 }
 
 .input:invalid {
@@ -252,25 +236,25 @@
 }
 
 .badge-primary {
-  background: rgba(0, 120, 85, 0.2);
+  background: rgba(229, 229, 229, 0.2);
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
 }
 
 .badge-secondary {
-  background: rgba(33, 160, 56, 0.2);
+  background: rgba(17, 17, 17, 0.2);
   color: var(--secondary-color);
   border: 1px solid var(--secondary-color);
 }
 
 .badge-accent {
-  background: rgba(161, 217, 0, 0.2);
+  background: rgba(252, 196, 0, 0.2);
   color: var(--accent-color);
   border: 1px solid var(--accent-color);
 }
 
 .badge-warning {
-  background: rgba(237, 113, 60, 0.2);
+  background: rgba(252, 196, 0, 0.2);
   color: var(--warning-color);
   border: 1px solid var(--warning-color);
 }
@@ -282,7 +266,7 @@
 }
 
 .glow-effect {
-  box-shadow: 0 0 20px rgba(33, 160, 56, 0.3);
+  box-shadow: 0 0 20px rgba(17, 17, 17, 0.3);
 }
 
 .hover-lift:hover {

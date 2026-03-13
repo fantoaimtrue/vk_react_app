@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
-from .models import MFO, Offer, UTMTracking, VKUser, PushNotification, PushLog
+from .models import MFO, Offer, UTMTracking, VKUser, PushNotification, PushLog, GlobalSettings
 from .services import register_or_update_user, check_notifications_permission
 import json
 import pandas as pd
@@ -114,7 +114,13 @@ def mfo_list(request):
     """
     try:
         # URL внешнего API
-        api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list&utm_source=vk_mini_app"
+        default_api_url = "https://api.we.itfinance.online/v1/website-shopwindow-offers?website_id=4228&shopwindow_type=of-list&utm_source=vk_mini_app"
+        
+        try:
+            settings = GlobalSettings.objects.first()
+            api_url = settings.external_api_url if settings else default_api_url
+        except Exception:
+            api_url = default_api_url
         
         headers = {
             'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
@@ -122,76 +128,85 @@ def mfo_list(request):
         }
 
         logger.info(f"Запрашиваем данные из {api_url}")
-        response = requests.get(api_url, timeout=10, headers=headers)
+        response = requests.get(api_url, timeout=15, headers=headers)
         response.raise_for_status()
-        data = response.json()
-        logger.info(f"Получено {len(data.get('items', []))} офферов от itfinance.online")
+        
+        try:
+            data = response.json()
+        except json.JSONDecodeError as json_err:
+            logger.error(f"❌ Ошибка парсинга JSON от внешнего API: {json_err}. Ответ: {response.text[:200]}")
+            return Response({'error': 'Некорректный ответ от партнера'}, status=status.HTTP_502_BAD_GATEWAY)
+
+        items = data.get('items', [])
+        if not isinstance(items, list):
+            logger.error(f"❌ Ожидался список в поле 'items', получено: {type(items)}")
+            items = []
+
+        logger.info(f"Получено {len(items)} офферов от itfinance.online")
 
         transformed_mfos = []
-        for item in data.get('items', []):
+        for item in items:
             offer_data = item.get('offer', {})
             if not offer_data or not offer_data.get('inn'):
                 continue
 
             mfo_instance = None
-            final_link = item.get('link') # Fallback link
+            final_link = item.get('link') or offer_data.get('link') or ''
 
-            # --- Извлекаем данные ПЕРЕД синхронизацией (чтобы они были доступны даже при ошибке) ---
+            # --- Извлекаем данные ПЕРЕД синхронизацией ---
             label_text = item.get('label_text', '')
             match = re.search(r'(\d+)%', label_text)
-            # Шанс одобрения от 93 до 98%
+            
             if match:
-                # Если процент найден в label_text, проверяем и ограничиваем диапазоном 93-98
                 parsed_chance = int(match.group(1))
                 approval_chance = max(93, min(98, parsed_chance))
             else:
-                # Генерируем значение от 93 до 98 на основе order (для разнообразия между офферами)
                 order = item.get('order', 1)
-                # Используем order для создания значения в диапазоне 93-98
-                # order от 1 до 8 -> значение от 98 до 93
-                approval_chance = 98 - min(5, (order - 1) % 6)
+                try:
+                    order_val = int(order)
+                except (ValueError, TypeError):
+                    order_val = 1
+                approval_chance = 98 - min(5, (order_val - 1) % 6)
+            
             payout_speed_hours = 0.5 if 'моментально' in label_text.lower() else 24
 
             try:
-                with transaction.atomic():
+                # Вспомогательная функция для безопасного приведения к числу
+                def safe_int(val, default=0):
+                    try:
+                        if val is None: return default
+                        return int(float(str(val).replace(' ', '').replace(',', '.')))
+                    except (ValueError, TypeError):
+                        return default
 
+                amount_min = safe_int(offer_data.get('amount_min'), 1000)
+                amount_max = safe_int(offer_data.get('amount_max'), 30000)
+                
+                with transaction.atomic():
                     # --- Атомарная синхронизация ---
-                    mfo_instance, created = MFO.objects.get_or_create(
-                        inn=offer_data.get('inn'),
+                    mfo_instance, created = MFO.objects.update_or_create(
+                        inn=str(offer_data.get('inn'))[:20],
                         defaults={
-                            'name': offer_data.get('product_name'),
-                            'link': item.get('link'), # Ссылка из API по умолчанию
+                            'name': str(offer_data.get('product_name', ''))[:200],
+                            'link': str(final_link)[:2000],
                             'approval_chance': approval_chance,
                             'payout_speed_hours': payout_speed_hours,
-                            'logo_url': offer_data.get('image_link'),
-                            'sum_min': int(float(offer_data.get('amount_min', 0))),
-                            'sum_max': int(float(offer_data.get('amount_max', 0))),
-                            'term_min': offer_data.get('loan_term_from'),
-                            'term_max': offer_data.get('loan_term_to'),
-                            'rate': 0.0,  # Всегда устанавливаем ставку 0%
+                            'logo_url': str(offer_data.get('image_link', ''))[:1000],
+                            'sum_min': amount_min,
+                            'sum_max': amount_max,
+                            'term_min': safe_int(offer_data.get('loan_term_from'), 7),
+                            'term_max': safe_int(offer_data.get('loan_term_to'), 30),
+                            'rate': 0.0,
                         }
                     )
-
-                    if not created:
-                        # Если объект уже существовал, обновляем его
-                        mfo_instance.name = offer_data.get('product_name')
-                        mfo_instance.logo_url = offer_data.get('image_link')
-                        mfo_instance.approval_chance = approval_chance  # Обновляем шанс одобрения (93-98%)
-                        mfo_instance.payout_speed_hours = payout_speed_hours  # Обновляем скорость выплаты
-                        mfo_instance.term_min = offer_data.get('loan_term_from')
-                        mfo_instance.term_max = offer_data.get('loan_term_to')
-                        mfo_instance.rate = 0.0  # Всегда устанавливаем ставку 0%
-                        # ... (обновляем другие поля, но НЕ ссылку)
-                        mfo_instance.sum_min = int(float(offer_data.get('amount_min', 0)))
-                        mfo_instance.sum_max = int(float(offer_data.get('amount_max', 0)))
-                        mfo_instance.save()
-                    
-                    final_link = mfo_instance.link # Используем ссылку из базы (новую или старую)
+                    final_link = mfo_instance.link
 
             except Exception as sync_error:
                 logger.error(f"Ошибка синхронизации для {offer_data.get('product_name')}: {sync_error}")
+                # Если синхронизация не удалась, используем данные из API
+                amount_min = safe_int(offer_data.get('amount_min'), 1000)
+                amount_max = safe_int(offer_data.get('amount_max'), 30000)
             
-            # --- Подготовка ссылки и финального объекта ---
             prepared_link = prepare_offer_link(final_link)
 
             response_item = {
@@ -199,11 +214,11 @@ def mfo_list(request):
                 'name': offer_data.get('product_name'),
                 'logo_url': offer_data.get('image_link'),
                 'link': prepared_link,
-                'sum_min': int(float(offer_data.get('amount_min', 0))),
-                'sum_max': int(float(offer_data.get('amount_max', 0))),
-                'term_min': offer_data.get('loan_term_from'),
-                'term_max': offer_data.get('loan_term_to'),
-                'rate': 0.0,  # Всегда возвращаем ставку 0%
+                'sum_min': amount_min,
+                'sum_max': amount_max,
+                'term_min': safe_int(offer_data.get('loan_term_from'), 7),
+                'term_max': safe_int(offer_data.get('loan_term_to'), 30),
+                'rate': 0.0,
                 'approval_chance': approval_chance,
                 'payout_speed_hours': payout_speed_hours,
                 'promo_text': label_text,
@@ -221,6 +236,55 @@ def mfo_list(request):
     except Exception as e:
         logger.exception("Непредвиденная ошибка в mfo_list")
         return Response({'error': 'Внутренняя ошибка сервера'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def mfo_list_from_db(request):
+    """
+    Получение списка МФО ТОЛЬКО из базы данных (для разработки).
+    Не делает запросов к внешнему API.
+    """
+    try:
+        mfos = MFO.objects.all().order_by('id')
+        
+        if not mfos.exists():
+            logger.warning("В базе данных нет МФО. Используйте /api/mfos/ для синхронизации с внешним API.")
+            return Response([], status=status.HTTP_200_OK)
+        
+        serializer = MFOSerializer(mfos, many=True)
+        
+        # Преобразуем данные в формат, совместимый с frontend
+        transformed_mfos = []
+        for mfo_data in serializer.data:
+            # Подготавливаем ссылку
+            prepared_link = prepare_offer_link(mfo_data.get('link', ''))
+            
+            response_item = {
+                'id': mfo_data.get('id'),
+                'name': mfo_data.get('name'),
+                'logo_url': mfo_data.get('logo_url'),
+                'link': prepared_link,
+                'sum_min': mfo_data.get('sum_min', 0),
+                'sum_max': mfo_data.get('sum_max', 0),
+                'term_min': mfo_data.get('term_min', 0),
+                'term_max': mfo_data.get('term_max', 0),
+                'rate': mfo_data.get('rate', 0.0),
+                'approval_chance': mfo_data.get('approval_chance', 95),
+                'payout_speed_hours': mfo_data.get('payout_speed_hours', 24),
+                'promo_text': '',  # Для БД версии может быть пустым
+                'requirements': mfo_data.get('requirements', []),
+                'get_methods': mfo_data.get('get_methods', []),
+                'repay_methods': mfo_data.get('repay_methods', []),
+            }
+            transformed_mfos.append(response_item)
+        
+        logger.info(f"Возвращено {len(transformed_mfos)} МФО из базы данных")
+        return Response(transformed_mfos)
+        
+    except Exception as e:
+        logger.exception("Ошибка в mfo_list_from_db")
+        return Response({'error': f'Внутренняя ошибка сервера: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -255,32 +319,32 @@ def utm_track(request):
         
         # Создаем запись UTM отслеживания
         utm_tracking = UTMTracking.objects.create(
-            user_id=user_data.get('id') or utm_params.get('vk_user_id') or utm_params.get('user_id'),
+            user_id=str(user_data.get('id') or utm_params.get('vk_user_id') or utm_params.get('user_id') or '')[:100],
             
             # UTM параметры
-            utm_source=utm_params.get('utm_source', ''),
-            utm_medium=utm_params.get('utm_medium', ''),
-            utm_campaign=utm_params.get('utm_campaign', ''),
-            utm_content=utm_params.get('utm_content', ''),
-            utm_term=utm_params.get('utm_term', ''),
+            utm_source=str(utm_params.get('utm_source', ''))[:200],
+            utm_medium=str(utm_params.get('utm_medium', ''))[:200],
+            utm_campaign=str(utm_params.get('utm_campaign', ''))[:200],
+            utm_content=str(utm_params.get('utm_content', ''))[:200],
+            utm_term=str(utm_params.get('utm_term', ''))[:200],
             
             # VK параметры
-            vk_ad_id=utm_params.get('vk_ad_id') or utm_params.get('ad_id', ''),
-            vk_ref=utm_params.get('vk_ref') or utm_params.get('ref', ''),
-            vk_ref_source=utm_params.get('vk_ref_source') or utm_params.get('ref_source', ''),
-            vk_platform=utm_params.get('vk_platform', ''),
+            vk_ad_id=str(utm_params.get('vk_ad_id') or utm_params.get('ad_id', ''))[:100],
+            vk_ref=str(utm_params.get('vk_ref') or utm_params.get('ref', ''))[:200],
+            vk_ref_source=str(utm_params.get('vk_ref_source') or utm_params.get('ref_source', ''))[:200],
+            vk_platform=str(utm_params.get('vk_platform', ''))[:100],
             
             # Дополнительные данные
-            url=data.get('url', ''),
-            referrer=data.get('referrer', ''),
-            user_agent=data.get('user_agent', ''),
+            url=str(data.get('url', ''))[:500],
+            referrer=str(data.get('referrer', ''))[:500],
+            user_agent=str(data.get('user_agent', '')),
             
             # Полные данные
             full_utm_data=utm_params,
             full_user_data=user_data,
             
             # Тип события
-            event_type=data.get('event_type', 'page_view')
+            event_type=str(data.get('event_type', 'page_view'))[:50]
         )
         
         # Клик регистрируется автоматически когда пользователь открывает ссылку через window.open()
@@ -1130,29 +1194,44 @@ def send_to_leads_tech(request):
                 }
             )
             
-            if leads_tech_response.status_code == 200:
-                logger.info(f"✅ [Leads.Tech] Успешно отправлено: {leads_tech_response.status_code}")
+            leads_status = leads_tech_response.status_code
+            leads_body = leads_tech_response.text[:1000]  # ограничиваем лог
+            
+            if 200 <= leads_status < 300:
+                logger.info(f"✅ [Leads.Tech] Успешно отправлено: {leads_status}")
             else:
-                logger.error(f"⚠️ [Leads.Tech] Ошибка: {leads_tech_response.status_code} - {leads_tech_response.text}")
+                logger.error(f"⚠️ [Leads.Tech] Ошибка: {leads_status} - {leads_body}")
+                return Response({
+                    'success': False,
+                    'error': 'Leads.tech responded with error',
+                    'leads_tech_status': leads_status,
+                    'leads_tech_body': leads_body,
+                    'leads_tech_url': leads_tech_params_url
+                }, status=status.HTTP_502_BAD_GATEWAY)
             
         except requests.exceptions.RequestException as leads_error:
             logger.error(f"⚠️ [Leads.Tech] Ошибка соединения: {leads_error}")
+            return Response({
+                'success': False,
+                'error': f'Connection error to leads.tech: {leads_error}',
+                'leads_tech_url': leads_tech_params_url if 'leads_tech_params_url' in locals() else None
+            }, status=status.HTTP_502_BAD_GATEWAY)
         
         # Сохраняем в UTMTracking для аналитики
         utm_tracking = UTMTracking.objects.create(
-            user_id=str(data.get('user_id', '')),
-            utm_source=data.get('utm_source', ''),
-            utm_medium=data.get('utm_medium', ''),
-            utm_campaign=data.get('utm_campaign', ''),
-            utm_content=data.get('utm_content', ''),
-            utm_term=data.get('utm_term', ''),
-            vk_ad_id=data.get('vk_ad_id', ''),
-            vk_ref=data.get('vk_ref', ''),
-            vk_ref_source=data.get('vk_ref_source', ''),
-            vk_platform=data.get('vk_platform', ''),
-            url=data.get('url', ''),
-            referrer=data.get('referrer', ''),
-            user_agent=data.get('user_agent', ''),
+            user_id=str(data.get('user_id', ''))[:100],
+            utm_source=str(data.get('utm_source', ''))[:200],
+            utm_medium=str(data.get('utm_medium', ''))[:200],
+            utm_campaign=str(data.get('utm_campaign', ''))[:200],
+            utm_content=str(data.get('utm_content', ''))[:200],
+            utm_term=str(data.get('utm_term', ''))[:200],
+            vk_ad_id=str(data.get('vk_ad_id', ''))[:100],
+            vk_ref=str(data.get('vk_ref', ''))[:200],
+            vk_ref_source=str(data.get('vk_ref_source', ''))[:200],
+            vk_platform=str(data.get('vk_platform', ''))[:100],
+            url=str(data.get('url', ''))[:500],
+            referrer=str(data.get('referrer', ''))[:500],
+            user_agent=str(data.get('user_agent', '')),
             full_utm_data=data,
             full_user_data=data,
             event_type='arbitrage_send'

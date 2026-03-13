@@ -1,5 +1,5 @@
 import bridge from '@vkontakte/vk-bridge';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import logger from '../utils/logger';
 
 export const usePushNotifications = (utmParams = {}) => {
@@ -7,12 +7,22 @@ export const usePushNotifications = (utmParams = {}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [promoApplied, setPromoApplied] = useState(false);
+    const utmParamsRef = useRef(utmParams);
+    const promoAppliedRef = useRef(false);
     
     // Детекция мобильного устройства
     const isMobile = () => {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                window.innerWidth <= 768;
     };
+
+    useEffect(() => {
+        utmParamsRef.current = utmParams;
+    }, [utmParams]);
+
+    useEffect(() => {
+        promoAppliedRef.current = promoApplied;
+    }, [promoApplied]);
 
     // Инициализация пользователя
     useEffect(() => {
@@ -28,7 +38,7 @@ export const usePushNotifications = (utmParams = {}) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             user_data: userData,
-                            utm_params: utmParams // Используем переданные UTM параметры
+                            utm_params: utmParamsRef.current
                         }),
                     });
                     
@@ -150,18 +160,26 @@ export const usePushNotifications = (utmParams = {}) => {
         };
 
         // Задержка для стабильности
-        setTimeout(checkSubscription, 500);
+        const subscriptionTimeoutId = setTimeout(checkSubscription, 500);
         
         // Дополнительная проверка для мобильных устройств через 2 секунды
+        let mobileTimeoutId = null;
         if (isMobile()) {
-            setTimeout(() => {
+            mobileTimeoutId = setTimeout(() => {
                 logger.info('📱 Дополнительная проверка для мобильного устройства');
-                if (!promoApplied) {
+                if (!promoAppliedRef.current) {
                     logger.info('📱 Принудительный показ окна на мобильном устройстве');
                     setShowModal(true);
                 }
             }, 2000);
         }
+
+        return () => {
+            clearTimeout(subscriptionTimeoutId);
+            if (mobileTimeoutId) {
+                clearTimeout(mobileTimeoutId);
+            }
+        };
     }, [user]);
 
     // Подписка на уведомления и активация промокода

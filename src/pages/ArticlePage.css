@@ -10,7 +10,7 @@
 .back-to-kb {
   display: inline-block;
   margin-bottom: 20px;
-  color: #ED713C;
+  color: #fcc400;
   text-decoration: none;
   font-weight: bold;
 }
@@ -21,7 +21,7 @@
 .article-page-title {
   color: #fff;
   line-height: 1.3;
-  border-bottom: 2px solid #ED713C;
+  border-bottom: 2px solid #fcc400;
   padding-bottom: 15px;
   margin-bottom: 25px;
 }
@@ -33,6 +33,6 @@
 }
 
 .article-content strong, .article-content b {
-  color: #ED713C;
+  color: #fcc400;
   font-weight: 600;
 } 

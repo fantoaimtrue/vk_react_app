@@ -1,0 +1,24 @@
+version: '3.8'
+
+# Конфигурация для разработки
+# Использование: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    # В разработке используем volume для hot-reload
+    volumes:
+      - ./backend:/app
+    # Команда для разработки (можно использовать runserver для отладки)
+    entrypoint: sh -c "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 1 --reload"
+    # Для отладки можно использовать runserver:
+    # entrypoint: sh -c "python manage.py collectstatic --noinput && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    # В разработке можно использовать dev Dockerfile
+    build:
+      dockerfile: Dockerfile.dev
+    # Или использовать volume для hot-reload (если настроен vite в dev режиме)
+    # volumes:
+    #   - ./src:/app/src
+    #   - ./public:/app/public
+

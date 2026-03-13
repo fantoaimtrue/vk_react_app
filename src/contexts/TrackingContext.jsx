@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import vkBridge from '@vkontakte/vk-bridge';
+import TrackingContext from './trackingContext';
 import {
   extractTrackingFromURL,
   saveTrackingToStorage,
@@ -19,8 +20,6 @@ import logger from '../utils/logger';
  * @property {string} [utm_term] - UTM term
  * @property {string|number} [vk_user_id] - VK user ID
  */
-
-const TrackingContext = createContext(null);
 
 /**
  * TrackingProvider - Provides tracking data throughout the app
@@ -157,16 +156,3 @@ export const TrackingProvider = ({ children }) => {
     </TrackingContext.Provider>
   );
 };
-
-/**
- * Hook to access tracking data and utilities
- * @returns {{ tracking: TrackingData, isInitialized: boolean, updateTracking: Function, buildUrl: Function }}
- */
-export const useTracking = () => {
-  const context = useContext(TrackingContext);
-  if (!context) {
-    throw new Error('useTracking must be used within TrackingProvider');
-  }
-  return context;
-};
-

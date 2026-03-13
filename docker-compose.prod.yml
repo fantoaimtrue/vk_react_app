@@ -1,11 +1,23 @@
 version: '3.8'
 
+# Конфигурация для продакшена
+# Использование: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
 services:
   backend:
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class sync --timeout 30 --max-requests 1000 --max-requests-jitter 50"
-    env_file:
-      - .env  # Загружаем переменные из .env файла (НЕ КОММИТИТЬ В GIT!)
+    # В продакшене добавляем migrate и убираем volume монтирование
+    entrypoint: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --worker-class sync --timeout 30 --max-requests 1000 --max-requests-jitter 50"
     restart: unless-stopped
-    # Убираем volume монтирование в продакшене для лучшей производительности
-    # volumes:
-    #   - ./backend:/app
+    # В продакшене НЕ монтируем ./backend:/app для лучшей производительности
+    # Код берется из образа, собранного при docker build
+    volumes:
+      - backend_static:/app/staticfiles
+      # Убрано: - ./backend:/app (для производительности)
+
+  frontend:
+    # В продакшене используем оптимизированную сборку
+    build:
+      dockerfile: Dockerfile
+      # Можно добавить build args для оптимизации
+      # args:
+      #   - NODE_ENV=production

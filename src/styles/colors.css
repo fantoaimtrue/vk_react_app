@@ -1,19 +1,19 @@
-/* Цветовая палитра в стиле Сбербанка */
+/* Цветовая палитра бренда "Утка Валютка" */
 :root {
-  /* Основные цвета Сбербанка */
-  --sber-dark-green: #007855;
-  --sber-bright-green: #21A038;
-  --sber-lime: #A1D900;
+  /* Основные цвета бренда */
+  --sber-dark-green: #111111;
+  --sber-bright-green: #111111;
+  --sber-lime: #fcc400;
   
   /* Дополнительные цвета */
-  --sber-orange: #ED713C;
+  --sber-orange: #fcc400;
   --sber-white: #FFFFFF;
-  --sber-dark-gray: #2E2E2E;
+  --sber-dark-gray: #111111;
   
   /* Градиенты */
-  --sber-main-gradient: linear-gradient(90deg, #007855 0%, #21A038 100%);
-  --sber-radial-gradient: radial-gradient(78.48% 78.48% at 50% 50%, #007855 0%, #012017 100%);
-  --sber-card-gradient: linear-gradient(135deg, rgba(0, 120, 85, 0.1) 0%, rgba(33, 160, 56, 0.1) 100%);
+  --sber-main-gradient: #fcc400;
+  --sber-radial-gradient: radial-gradient(78.48% 78.48% at 50% 50%, #E5E5E5 0%, #D3D3D3 100%);
+  --sber-card-gradient: linear-gradient(135deg, rgba(229, 229, 229, 0.1) 0%, rgba(211, 211, 211, 0.1) 100%);
   
   /* Семантические цвета */
   --primary-color: var(--sber-dark-green);
@@ -27,9 +27,9 @@
   
   /* Фоновые цвета */
   --bg-primary: var(--sber-main-gradient);
-  --bg-secondary: rgba(0, 120, 85, 0.1);
+  --bg-secondary: rgba(229, 229, 229, 0.1);
   --bg-card: rgba(255, 255, 255, 0.05);
-  --bg-modal: rgba(1, 32, 23, 0.95);
+  --bg-modal: rgba(17, 17, 17, 0.95);
   --bg-overlay: rgba(0, 0, 0, 0.7);
   
   /* Границы */
@@ -42,7 +42,7 @@
   --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.2);
   --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-colored: 0 4px 16px rgba(0, 120, 85, 0.2);
+  --shadow-colored: 0 4px 16px rgba(17, 17, 17, 0.2);
   
   /* Состояния элементов */
   --hover-overlay: rgba(255, 255, 255, 0.1);

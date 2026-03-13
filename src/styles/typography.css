@@ -1,11 +1,8 @@
-/* Типографика в стиле Сбербанка */
-
-/* Импорт шрифтов (Сбербанк использует собственный шрифт, но мы используем похожие системные) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Типографика бренда "Утка Валютка" */
 
 :root {
-  /* Основные шрифты */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Основные шрифты - системный стек */
+  --font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-monospace: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   
   /* Размеры шрифтов */
@@ -46,7 +43,7 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
-  color: var(--text-primary);
+  color: var(--brand-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
